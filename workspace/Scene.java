@@ -100,7 +100,8 @@ public class Scene extends JPanel
     repaint();
   }
   
-  /** */
+  /** Function to return the name of the animation file.
+   *  @return A String representing the animation file name. */
   public String getAnimationFile()
   {
     return animationFile;
