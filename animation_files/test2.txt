@@ -1,0 +1,9 @@
+ANIMATION 2
+transition in 2000
+add local heather 100 100 500
+move 100 900 500 100
+print Heyo!
+transition out 1000
+wait 1000
+remove 100
+return 3

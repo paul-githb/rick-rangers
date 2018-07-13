@@ -1,0 +1,15 @@
+ANIMATION 5
+
+
+open
+add local heather 1 -100 500
+move 1 800 500 200
+wait 1000
+print Bye!
+wait 1000
+remove 1
+clear-text
+wait 1000
+transition out 4000
+remove all
+return -1

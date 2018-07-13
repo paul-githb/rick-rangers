@@ -1,0 +1,7 @@
+animation 4
+
+transition in 4000 // TRANSITION INTO THE SCENE
+add local heather 1 0 500 // ADD HEATHER ON LEFT
+move 1 1000 500 200 // MOVE HEATHER TO OTHER END
+remove 1 // REMOVE HEATHER FROM THE SCENE
+return 5 // GO TO NEXT SCENE
