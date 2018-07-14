@@ -12,16 +12,22 @@ public class Game extends JFrame
   private AnimationReader aReader;
   
   /* The current scene being processed. */
-  private static Scene currentScene;
+  private static Scene currentScene = null;
   
-  /* The dimensions of the window of the game. */
-  public final static int WIDTH = 1000;
-  public final static int HEIGHT = 500;
+  /* The scale of the JFrame window. */
+  public static final int WIDTH = 1000;
+  public static final int HEIGHT = 500;
   
   /** Constructor for the Game class. Represents the window of the
    *  game that retrieves and holds all of the scenes. */
   public Game() {
     super("Game");
+    
+    /* Load the enumerations. */
+    try {
+      Class.forName("FigureType");
+      Class.forName("BackgroundType");
+    } catch (ClassNotFoundException e) {}
     
     /* Initialize private fields. */
     scenes = new ArrayList<Scene>();
@@ -52,21 +58,13 @@ public class Game extends JFrame
       /* Set up the new scene. */
       setContentPane(currentScene);
       pack();
+      System.out.println();
       
       /* Animate the new scene. */
       currentScene
       = find_scene
       ( aReader.animate(currentScene) );
     }
-  }
-  
-  /** Function to resize the dimensions of the JFrame. This function
-   *  merely lets outside classes call the pack function, which in turn
-   *  resizes the frame based on the preferred size of the current scene
-   *  being held. */
-  public void resizeWindow()
-  {
-    pack();
   }
   
   /** Function to find the scene with the given ID. This operation
@@ -150,15 +148,16 @@ public class Game extends JFrame
       
       /* Make sure it's an animation file. */
       if (f.isFile() && aReader.isAnimationFile(fName)) {
-        System.out.println("Added animation file: " + fName);
-        Scene newScene = new Scene(fName, aReader.extractSceneID(fName));
+        System.out.println("Loaded animation file: " + fName);
+        Scene newScene = new Scene
+        (fName, aReader.extractSceneID(fName));
         scenes.add(newScene);
       }
     }
   }
   
   /** Function to get the current scene being processed and animated.
-   *  @return The current scene being processed.*/
+   *  @return The current scene being processed. */
   public static Scene getCurrentScene()
   {
     return currentScene;

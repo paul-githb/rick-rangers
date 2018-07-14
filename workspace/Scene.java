@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.awt.geom.*;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -28,15 +29,10 @@ public class Scene extends JPanel
   private int result;
   
   /** The current text being displayed on-screen. */
-  private String text;
+  private ArrayList<String> text;
   
-  /** TEMPORARY BACKGROUND */
-  private ImageIcon bg
-  = new ImageIcon
-  ( new ImageIcon
-  ( "..\\images\\backgrounds\\background1.png" ).getImage
-  ().getScaledInstance
-  ( Game.WIDTH, Game.HEIGHT, Image.SCALE_SMOOTH ) );
+  /* The background image. */
+  private ImageIcon background;
   
   
   
@@ -47,14 +43,15 @@ public class Scene extends JPanel
    *  animation file provided and with the specified ID.
    *  @param file   The path to this scene's animation file.
    *  @param id     The ID to set for this scene. */
-  public Scene(String file, int id)
+  public Scene (String file, int id)
   {
+    /* Initialize fields based on parameters. */
     animationFile = file;
     sceneID = id;
-    text = "";
-    opacity = 255;
     
-    result = 0;
+    /* Initialize the remaining fields. */
+    text = new ArrayList<String>();
+    opacity = 255;
     characters = new ArrayList<Figure>();
     buttons = new ArrayList<GameButton>();
   }
@@ -70,7 +67,6 @@ public class Scene extends JPanel
    *  @param duration   The duration of the transition in millseconds. */
   public void transitionIn(int duration)
   {
-    System.out.println("Transition in for " + (duration / 1000.0) + "s");
     (new Thread
     (new Transition
     (this, duration, -1) ) ).start();
@@ -83,7 +79,6 @@ public class Scene extends JPanel
    *  @param duration   The duration of the transition in milliseconds. */
   public void transitionOut(int duration)
   {
-    System.out.println("Transition out for " + (duration / 1000.0) + "s");
     (new Thread
     (new Transition
     (this, duration, 1) ) ).start();
@@ -151,21 +146,23 @@ public class Scene extends JPanel
   }
   
   /** */
-  public void addCharacter(String cType, String name, int id, int x, int y)
+  public void addCharacter
+  (String cType, String name, String id,
+   int x, int y, double sz, String type)
   {
     System.out.println
-    ("Added " + name + " " + cType + "ly w/ ID:" + id
-    + " at (" + x + "," + y + ")");
+    ("Added " + name + " " + cType + "ly w/ ID:\"" + id
+    + "\" at (" + x + "," + y + ") w/ " + type + " size of " + sz);
     
     /* FIXME: Add support for global character check later. */
-    Figure newCharacter = new Figure(name, id, x, y);
+    Figure newCharacter = new Figure(name, id, x, y, sz, type);
     characters.add(newCharacter);
     add(newCharacter);
     repaint();
   }
   
   /** */
-  public void removeCharacter(int id)
+  public void removeCharacter(String id)
   {
     int i = -1;
     int len = characters.size();
@@ -173,8 +170,8 @@ public class Scene extends JPanel
     while (!found && ++i < len)
     {
       Figure character = characters.get(i);
-      if (character.getID() == id) {
-        System.out.println("Removed character w/ ID:" + id);
+      if (character.getID().equals(id)) {
+        System.out.println("Removed character w/ ID:\"" + id + "\"");
         characters.remove(i);
         remove(character);
         repaint();
@@ -186,52 +183,82 @@ public class Scene extends JPanel
   /** */
   public void removeAll()
   {
-    System.out.println("Removed all characters.");
     for (int i = 0; i < characters.size(); i++)
     {
-      remove(characters.get(i));
+      Figure fig = characters.get(i);
+      System.out.println("Removed character w/ ID:\""
+      + fig.getID() + "\"");
+      remove(fig);
     }
     characters = new ArrayList<Figure>();
     repaint();
   }
   
   /** */
-  public void setCharacter(int id, int imageNum)
+  public void setCharacter(String id, String appearance)
   {
-    System.out.println("Set character w/ ID:" + id + " to IMG:" + imageNum);
-    getCharacter(id).setState(imageNum);
-    repaint();
-  }
-  
-  /** */
-  public void moveCharacter(int id, int x, int y, int speed) {
     System.out.println
-    ("Moved character w/ ID:" + id + " to (" + x + "," + y + ")"
-    + " @ " + speed + " px/s");
-    getCharacter(id).moveTo(x, y, speed);
-  }
-  
-  /** */
-  public void displayText(String text) {
-    if (!text.equals("")) {
-      System.out.println("Printed: " + text);
-    } else {
-      System.out.println("Text cleared.");
-    }
-    this.text = text;
+    ("Set character w/ ID:\"" + id + "\" to IMG:" + appearance);
+    Figure fig = getCharacter(id);
+    if (fig != null) fig.setState(appearance);
     repaint();
   }
   
   /** */
-  
+  public void moveCharacter(String id, int x, int y, int speed) {
+    System.out.println
+    ("Moved character w/ ID:\"" + id + "\" to (" + x + "," + y + ")"
+    + " @ " + speed + " px/s");
+    Figure fig = getCharacter(id);
+    if (fig != null) fig.moveTo(x, y, speed);
+  }
   
   /** */
+  public void addText(String text) {
+    if ( text == null || text.equals("") )
+      this.text = new ArrayList<String>();
+    else this.text.add(text);
+    repaint();
+  }
   
+  /** */
+  public void setBackgroundImage (String name)
+  {
+    /* The background type. */
+    BackgroundType type = null;
+    
+    /* Find the appropriate background. */
+    if (name.equals("ambulance1")) type = BackgroundType.AMBULANCE1;
+    else if (name.equals("ambulance2")) type = BackgroundType.AMBULANCE2;
+    else if (name.equals("ambulance3")) type = BackgroundType.AMBULANCE3;
+    else if (name.equals("boat1")) type = BackgroundType.BOAT1;
+    else if (name.equals("building1")) type = BackgroundType.BUILDING1;
+    else if (name.equals("building2")) type = BackgroundType.BUILDING2;
+    else if (name.equals("city1")) type = BackgroundType.CITY1;
+    else if (name.equals("city2")) type = BackgroundType.CITY2;
+    else if (name.equals("office1")) type = BackgroundType.OFFICE1;
+    else if (name.equals("office2")) type = BackgroundType.OFFICE2;
+    else type = BackgroundType.TITLE;
+    
+    /* Set the background and apply it. */
+    background = type.getImage();
+    repaint();
+  }
+  
+  /** */
+  public void resizeCharacter (String id, double size, String type)
+  {
+    System.out.println("Resized character w/ ID:\"" + id + "\" to a"
+    + ( (type.equals("absolute")) ? "n" : "" )
+    + " " + type + " size of " + size);
+    Figure fig = getCharacter(id);
+    if (fig != null) fig.resize(size, type);
+  }
   
   
   
   /* PRIVATE MEMBER FUNCTIONS */
-  private Figure getCharacter(int id)
+  private Figure getCharacter(String id)
   {
     /* Loop through each character in the scene. */
     int len = characters.size();
@@ -239,7 +266,7 @@ public class Scene extends JPanel
     {
       /* Find the character that matches the ID. */
       Figure character = characters.get(i);
-      if (character.getID() == id) {
+      if (character.getID().equals(id)) {
         return character;
       }
     }
@@ -255,16 +282,22 @@ public class Scene extends JPanel
   @Override
   public Dimension getPreferredSize()
   {
-    return new Dimension(Game.WIDTH, Game.HEIGHT);
+    return new Dimension
+    (Game.WIDTH, Game.HEIGHT);
   }
   
   @Override
   public void paintComponent(Graphics g)
   {
     super.paintComponent(g);
+    Graphics2D g2d = (Graphics2D) g;
+    
+    /* Set the text box stroke. */
+    int stroke = 6;
+    g2d.setStroke(new BasicStroke(stroke));
     
     /* Paint the background. */
-    bg.paintIcon(this, g, 0, 0);
+    if (background != null) background.paintIcon(this, g, 0, 0);
     
     /* Paint the characters. */
     for (int i = 0; i < characters.size(); i++)
@@ -273,11 +306,31 @@ public class Scene extends JPanel
     }
     
     /* Paint the text box. FIXME */
-    if (!text.equals("")) {
+    int num_lines = text.size();
+    if (num_lines != 0)
+    {
+      /* The text box. */
       g.setColor(Color.WHITE);
+      double height = 0.2;
+      int y = Game.HEIGHT - (int) (height * Game.HEIGHT);
+      g.fillRect(0, y, Game.WIDTH, (int) (height * Game.HEIGHT));
       
-      g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 20));
-      g.drawString(text, 100, 100);
+      g.setColor(Color.BLACK);
+      g2d.draw(new Rectangle2D.Double
+      (stroke - stroke / 2, y,
+      Game.WIDTH - stroke,
+      (int) (height * Game.HEIGHT - (stroke - stroke / 2))));
+      
+      /* The text strings. */
+      int font_size = 18;
+      g.setFont( new Font ( Font.MONOSPACED, Font.BOLD, font_size ) );
+      int x = stroke + 2;
+      y += font_size;
+      for (int i = 0; i < num_lines; i++)
+      {
+        String line = text.get(i);
+        g.drawString(line, x, y + font_size * i);
+      }
     }
     
     /* Paint the cover if transitioning. */
@@ -319,12 +372,5 @@ public class Scene extends JPanel
   public String toString()
   {
     return "Scene ID:" + sceneID;
-  }
-  
-  public static void main(String[] args) {
-    Scene scene = new Scene("animation_files\\test.txt", 1);
-    AnimationReader reader = new AnimationReader();
-    int next = reader.animate(scene);
-    System.out.println("Returned. Next Scene: " + next);
   }
 }

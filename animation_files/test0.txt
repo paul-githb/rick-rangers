@@ -1,0 +1,41 @@
+ANIMATION 0 CITY1
+
+Transition in 5000 ms.
+Print Hello World!
+Wait 2500 ms.
+Set opacity full for a split second.
+Wait 2500 ms.
+//Clear text on the screen.
+Add local mob first_mob 200 500 0.5 AbsolutE 
+Add local enemy my_enemy // look i can type a comment!
+Move my_enemy 400 300 500 px/s // This should take roughly 1 second.
+Wait 1000 ms.
+Set opacity full
+SET backGround ambulance1
+Wait 1000 ms.
+Set opacity none
+Wait 1000 ms.
+Set opacity 25
+
+id 1
+// PUNCHING ACTION
+Set character first_mOb action1
+Wait 100 ms.
+Set character first_mob action2
+Wait 100 ms.
+increment ctr
+goto 1 if ctr < 5
+
+Set opacity none
+Wait 100 ms.
+set size first_mob 1.5 relative
+Wait 1000 ms.
+set size first_mob 0.75 absolute
+print Bye!
+Wait 2000 ms.
+Remove all characters from the scene.
+Wait 1000 ms.
+Set opacity full
+reset counter
+clear-text
+return 0

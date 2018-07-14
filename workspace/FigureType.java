@@ -54,12 +54,25 @@ public enum FigureType
       /* Retrieve the location of the file. */
       if (i < first_non_image) {
         fn = path + image + i + ".png";
+        System.out.println("Loaded character image: " + fn);
       } else {
         fn = path + image + 0 + ".png";
       }
       
+      /* Load the image first. */
+      ImageIcon loaded_image = new ImageIcon(fn);
+      
+      /* Determine the width and height of loaded image. */
+      int load_height = Game.HEIGHT;
+      int load_width
+      = (int) ( ( (double) Game.HEIGHT / loaded_image.getIconHeight() )
+      * loaded_image.getIconWidth() );
+      
       /* Add the image to the array as an icon. */
-      animationImages[i] = new ImageIcon(fn);
+      animationImages[i]
+      = new ImageIcon
+      ( loaded_image.getImage().getScaledInstance
+      ( load_width, load_height, Image.SCALE_SMOOTH ) );
     }
   }
   

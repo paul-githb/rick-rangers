@@ -26,6 +26,9 @@ import java.util.regex.Pattern;
  *  The handling/response of this return value must be specified in the
  *  project's main class, e.g. the Game class.
  *
+ *  Animation files are NOT case-sensitive, except for the print message
+ *  and the button labels.
+ *
  *  @author Paul Shin
  *  @since 0.1.0
  *  @version 0.1.0
@@ -37,6 +40,12 @@ public class AnimationReader
   
   /** The current scene being animated (via animate(Scene)). */
   private Scene currentScene;
+  
+  /** A counter variable to be used for simple looping. */
+  private int counter;
+  
+  /** The main reader processing the file. */
+  private BufferedReader mainReader;
   
   /** Performs animations based on each scene's respective animation file.
       @param scene    The scene to animate on the screen.
@@ -54,7 +63,7 @@ public class AnimationReader
       currentScene = scene;
       
       /* Reads the lines of the animation file. */
-      BufferedReader reader
+      mainReader
       = new BufferedReader
       ( new FileReader
       ( currentFile ) );
@@ -62,8 +71,13 @@ public class AnimationReader
       /* Stores the line of text extracted from the file. */
       String line = "";
       
+      /* Set the background image first if it's in the header. */
+      String bg = extractSceneBG(scene.getAnimationFile());
+      if (!bg.equals("")) scene.setBackgroundImage(bg);
+      
       /* Read each line in the animation text file. */
-      while ( reader != null && (line = reader.readLine() ) != null)
+      while ( mainReader != null
+      && (line = mainReader.readLine() ) != null)
       {
         /* The line is empty. */
         if (line.equals("")) {
@@ -74,12 +88,12 @@ public class AnimationReader
         String[] tokens = line.split(" ");
         
         /* Stores the first token (or the command) of the line. */
-        String command = tokens[0];
+        String command = tokens[0].toLowerCase();
         
         /* Add a character into the scene. */
         if (command.equals("add")) {
           handleAdd(tokens);
-        } // add [global|local] [name] [id] [x] [y]
+        } // add [global|local] [name] [id] [[x]] [[y]] [[size]]
         
         /* Remove a character from the scene. */
         else if (command.equals("remove")) {
@@ -91,10 +105,13 @@ public class AnimationReader
           handleMove(tokens);
         } // move [id] [x] [y] [speed]
         
-        /* Set a character's current appearance. */
+        /* Set a character's appearance, background, or opacity. */
         else if (command.equals("set")) {
           handleSet(tokens);
-        } // set [id] [image-num]
+        } // set character [id] [appearance]
+          // set background [background-name]
+          // set opacity [0-100]
+          // set size [id] [size] [relative|absolute]
         
         /* Display a text box on the bottom of the screen. */
         else if (command.equals("print")) {
@@ -103,7 +120,7 @@ public class AnimationReader
         
         /* Clear the text box on the bottom of the screen. */
         else if (command.equals("clear-text")) {
-          scene.displayText("");
+          scene.addText("");
         }
         
         /* Wait a certain number of milliseconds. */
@@ -113,12 +130,13 @@ public class AnimationReader
         
         /* Move within the file to the marked id location. */
         else if (command.equals("goto")) {
-          reader = handleGoto(tokens);
+          mainReader = handleGoto(tokens);
         } // goto [id]
+          // goto [id] if counter [relational-operator] [comparison]
         
         /* Display and handle buttons. */
         else if (command.equals("*")) {
-          reader = findID(handleButtons(scene, reader));
+          mainReader = findID(handleButtons(scene, mainReader));
         } // * \n [button-text] [id] \n [button-text] [id] \n ...
         
         /* Return and specify the next scene to animate. */
@@ -131,13 +149,20 @@ public class AnimationReader
           handleTransition(tokens);
         } // transition [in|out] [ms]
         
-        else if (command.equals("open")) {
-          scene.setOpacity(0);
-        }
+        /* Increments the counter used in simple loops. */
+        else if (command.equals("increment")) {
+          counter++;
+        } // increment counter
         
-        else if (command.equals("close")) {
-          scene.setOpacity(255);
-        }
+        /* Decrements the counter used in simple loops. */
+        else if (command.equals("decrement")) {
+          counter--;
+        } // decrement counter
+        
+        /* Resets the counter to its ground state of 0. */
+        else if (command.equals("reset")) {
+          counter = 0;
+        } // reset counter
       }
     } catch (IOException e) {
       /* Print an error message. */
@@ -151,8 +176,11 @@ public class AnimationReader
   
   /** Function to check whether a given file located at the specified file
    *  path is an animation file. An animation file is denoted with the term
-   *  ANIMATION appearing on the first line of the file with a number.
-   *  @param file   The path to the file to check. */
+   *  ANIMATION appearing on the first line of the file with a number to
+   *  denote the scene ID and possibly a String to denote the starting
+   *  background name.
+   *  @param file   The path to the file to check.
+   *  @return Whether or not the correct heading format was used. */
   public boolean isAnimationFile(String file)
   {
     try {
@@ -169,8 +197,8 @@ public class AnimationReader
         /* Separate the first line into individual tokens. */
         String[] tokens = line.split(" ");
         
-        /* Make sure there are two tokens and the first says "ANIMATION". */
-        if (tokens.length == 2
+        /* Make sure there are 2-3 tokens and the first says "ANIMATION". */
+        if (tokens.length == 2 || tokens.length == 3
         && tokens[0].toLowerCase().equals("animation")) {
           try {
             /* Verify that the second token is an integer. */
@@ -198,8 +226,10 @@ public class AnimationReader
   
   /** Function to return the scene ID number set by the animation file.
    *  Precondition: The file has previously been sent through the function
-   *  boolean isAnimationFile(String) and verified.
-   *  @param file   The path to the animation file. */
+   *  boolean isAnimationFile(String) and verified. If any error occurs,
+   *  the minimal integer value is returned.
+   *  @param file   The path to the animation file.
+   *  @return The scene ID number set by the animation file. */
   public int extractSceneID(String file)
   {
     try {
@@ -229,14 +259,67 @@ public class AnimationReader
     return Integer.MIN_VALUE;
   }
   
+  /** Function to return the starting scene background image set by the
+   *  animation file. This is not necessary, but is encouraged if you
+   *  know what the starting background image is, as it will be loaded
+   *  during scene creation.
+   *  Precondition: The file has been previously sent through the function
+   *  boolean isAnimationFile(String) and verified. If any error occurs,
+   *  the null string is returned.
+   *  @param file   The path to the animation file.
+   *  @return The name of the background to set during scene creation. */
+  public String extractSceneBG (String file)
+  {
+    try {
+      /* Load the file. */
+      BufferedReader reader
+      = new BufferedReader
+      ( new FileReader
+      ( file ) );
+      
+      /* Read the top line from the file. */
+      String line = reader.readLine();
+      
+      /* Separate the first line into individual tokens. */
+      String[] tokens = line.split(" ");
+      
+      /* Return the third token as the scene BG, if it exists. */
+      return tokens[2].toLowerCase();
+    } catch (IOException e) {
+      /* Print an error message. */
+      System.out.println
+      ("Error while reading " + file + " in extractSceneBG()");
+    } catch (IndexOutOfBoundsException e) {}
+    
+    /* An error occurred or the user has not specified a starting BG. */
+    return "";
+  }
+  
+  /** */
+  private boolean isInteger(String s)
+  {
+    Scanner sc = new Scanner(s);
+    if ( !sc.hasNextInt() ) return false;
+    sc.nextInt();
+    return !sc.hasNext();
+  }
+  
+  private boolean isDouble(String s)
+  {
+    Scanner sc = new Scanner(s);
+    if ( !sc.hasNextDouble() ) return false;
+    sc.nextDouble();
+    return !sc.hasNext();
+  }
+  
   /** Handles the add command, which adds a character to a scene.
-      The proper syntax is: add [global|local] [name] [id] [x] [y],
+      The proper syntax is: add [global|local] [name] [id] [x] [y] [size],
       where the keyword "global" denotes a character that can be
       saved and used throughout all scenes, "local" denotes a
       character that is to be used only in the current scene, id is
       an integer representing the character's unique ID number, x is
-      the initial horizontal position, and y is the initial vertical
-      position.
+      the initial horizontal position, y is the initial vertical
+      position, and size is the initial absolute size.
       @param tokens   The line with the add command and arguments. */
   private void handleAdd (String[] tokens)
   {
@@ -244,22 +327,40 @@ public class AnimationReader
     if (tokens.length >= 6) {
       try {
         /* The type of character created (global or local). */
-        String cType = tokens[1];
+        String cType = tokens[1].toLowerCase();
         
         /* The character's name as defined by the image file names. */
-        String name = tokens[2];
+        String name = tokens[2].toLowerCase();
         
         /* An identification number for the character. */
-        int id = Integer.parseInt(tokens[3]);
+        String id = tokens[3].toLowerCase();
         
         /* The horizontal position of the character in the window. */
-        int x = Integer.parseInt(tokens[4]);
+        int x = 0;
+        if ( tokens.length > 4
+        && isInteger( tokens[4] ) ) x = Integer.parseInt(tokens[4]);
         
         /* The vertical position of the base of the character. */
-        int y = Integer.parseInt(tokens[5]);
+        int y = 0;
+        if ( tokens.length > 5
+        && isInteger( tokens[5] ) ) y = Integer.parseInt(tokens[5]);
+        
+        /* The size of the character. */
+        double size = 1.0;
+        if (tokens.length > 6
+        && isDouble( tokens[6] ) ) size = Double.parseDouble(tokens[6]);
+        
+        /* The type of sizing used. */
+        String type = "";
+        if (tokens.length > 7
+        && tokens[7].toLowerCase().equals("relative")) {
+          type = "relative";
+        } else {
+          type = "absolute";
+        }
         
         /* Add the character to the specified location. */
-        currentScene.addCharacter(cType, name, id, x, y);
+        currentScene.addCharacter(cType, name, id, x, y, size, type);
       }
       
       /* An integer argument is not an integer. */
@@ -283,11 +384,11 @@ public class AnimationReader
   {
     try {
       /* First check if all characters are to be removed. */
-      if (tokens[1].equals("all")) {
+      if (tokens[1].toLowerCase().equals("all")) {
         currentScene.removeAll();
       } else {
         /* The character's identification number. */
-        int id = Integer.parseInt(tokens[1]);
+        String id = tokens[1].toLowerCase();
         
         /* Remove the character with the given ID. */
         currentScene.removeCharacter(id);
@@ -316,7 +417,7 @@ public class AnimationReader
   {
     try {
       /* The character-to-move's identification number. */
-      int id = Integer.parseInt(tokens[1]);
+      String id = tokens[1].toLowerCase();
       
       /* The horizontal location to position your character. */
       int x = Integer.parseInt(tokens[2]);
@@ -342,24 +443,88 @@ public class AnimationReader
     }
   }
   
-  /** Handles the set command, which sets the appearance of a character
-      in the scene. The proper syntax is: set [id] [image-num], where
-      id is an integer representing the character's unique ID number
-      and image-num is the number of the image as defined by the name
-      of the specific image file, i.e. the image-num in "rick2.png"
-      would be 2.
-      @param tokens   The line with the set command and arguments. */
+  /** Handles the set command, which sets the appearance of a character,
+   *  changes the background image, or sets the opacity. The respective
+   *  syntaxes for these commands are "set character [id] [appearance]",
+   *  "set background [background-name]", and "set opacity [0-100]".
+   *  @param tokens   The line with the set command and arguments. */
   private void handleSet(String[] tokens)
   {
     try {
-      /* The character's identification number. */
-      int id = Integer.parseInt(tokens[1]);
+      String request = tokens[1].toLowerCase();
       
-      /* The specific number marking one appearance/state of the character. */
-      int imageNum = Integer.parseInt(tokens[2]);
+      /* Set Character Appearance */
+      if (request.equals("character"))
+      {
+        /* The character's identification number. */
+        String id = tokens[2].toLowerCase();
+        
+        /* The specific keyword marking a state of the character. */
+        String state = tokens[3].toLowerCase();
+        
+        /* Set the appearance of the character with the given ID. */
+        currentScene.setCharacter(id, state);
+      }
       
-      /* Set the appearance of the character with the given ID. */
-      currentScene.setCharacter(id, imageNum);
+      /* Set Background Image */
+      else if (request.equals("background")) {
+        /* The image's name. */
+        String imageName = tokens[2].toLowerCase();
+        
+        /* Set the background image. */
+        currentScene.setBackgroundImage(imageName);
+      }
+      
+      /* Set Opacity */
+      else if (request.equals("opacity")) {
+        int opacity = 0; // stores the user-defined opacity
+        
+        /* See if certain special keywords match. */
+        String opacityStr = tokens[2].toLowerCase();
+        if (opacityStr.equals("none")) opacity = 0;
+        else if (opacityStr.equals("full")) opacity = 255;
+        
+        /* If no keywords match, then see if it's an integer value. */
+        else {
+          /* The opacity level, converting 0-100 into 0-255. */
+          opacity = (int) (Integer.parseInt(tokens[2]) * 2.55);
+          
+          /* Verify that the opacity is within bounds. */
+          if (opacity < 0) opacity = 0;
+          else if (opacity > 255) opacity = 255;
+        }
+        
+        /* Set the opacity level to the current scene. */
+        currentScene.setOpacity(opacity);
+      }
+      
+      /* Set Size of a Character */
+      else if (request.equals("size")) {
+        /* The ID of the character. */
+        String char_id = tokens[2];
+        
+        /* The size to set. */
+        double size = Double.parseDouble(tokens[3]);
+        
+        /* Whether the size value is relative or absolute. */
+        String type = "";
+        
+        /* Determine if absolute or relative. */
+        if (tokens.length > 4
+        && tokens[4].toLowerCase().equals("relative")) {
+          type = "relative";
+        } else {
+          type = "absolute";
+        }
+        
+        /* Resize the character. */
+        currentScene.resizeCharacter(char_id, size, type);
+      }
+      
+      /* An invalid second argument. */
+      else {
+        System.out.println("Set failed: Second token was invalid.");
+      }
     }
     
     /* Invalid argument count. */
@@ -390,8 +555,8 @@ public class AnimationReader
       message += tokens[i] + " ";
     }
     
-    /* Display the message on the screen. */
-    currentScene.displayText(message);
+    /* Add the message to the screen. */
+    currentScene.addText(message);
   }
   
   /** Handles the return command, which stops processing the animation
@@ -432,12 +597,15 @@ public class AnimationReader
   {
     try {
       int duration = Integer.parseInt(tokens[2]); // duration of transition
+      String type = tokens[1].toLowerCase();
       
       /* Two types of transitions: in or out. */
-      if (tokens[1].equals("in")) {
+      if (type.equals("in")) {
         currentScene.transitionIn(duration);
-      } else if (tokens[1].equals("out")) {
+      } else if (type.equals("out")) {
         currentScene.transitionOut(duration);
+      } else {
+        System.out.println("Transition failed: Invalid transition type.");
       }
     }
     
@@ -503,13 +671,12 @@ public class AnimationReader
       
       /* Wait for the scene to indicate it's ready for more animations. */
       try {
-        while ( (result = scene.getResult() ) == 0) 
-        {
-          Thread.sleep(100);
-        }
+        while ( (result = scene.getResult() ) == 0) Thread.sleep(100);
       } catch (InterruptedException e) {
         System.out.println("Error while waiting for button press.");
       }
+      
+      /* Destroy all buttons on the screen. */
       scene.destroyButtons();
     }
     
@@ -593,9 +760,9 @@ public class AnimationReader
           String[] tokens = line.split(" ");
           
           /* Check to see if the declaration is valid.
-             A valid declaration follows:
-              1. The number of arguments is at least 2. (3+ are ignored.)
-              2. The second argument is a natural number. */
+           * A valid declaration follows:
+           *  1. The number of arguments is at least 2. (3+ are ignored.)
+           *  2. The second argument is a natural number. */
           if (tokens.length > 1 && pattern.matcher(tokens[1]).matches()) {
             /* Return if the ID specified matches the requested ID. */
             if (Integer.parseInt(tokens[1]) == id) {
@@ -627,8 +794,57 @@ public class AnimationReader
   private BufferedReader handleGoto (String[] tokens)
   {
     try {
-      /* Return the location of the specified marked id. */
-      return findID(Integer.parseInt(tokens[1]));
+      /* The goto command should always run in this case. */
+      if (tokens.length == 2) {
+        /* Return the location of the specified marked id. */
+        return findID(Integer.parseInt(tokens[1]));
+      }
+      
+      /* The goto command will run depending on the counter variable. */
+      
+      
+      
+      /* The ID to search for within the animation file. */
+      int id = Integer.parseInt(tokens[1]);
+      
+      /* The file specifies a conditional. */
+      if (tokens.length > 2 && tokens[2].equals("if")) {
+        String condition = tokens[4]; // the condition
+        int comparison = Integer.parseInt(tokens[5]); // the comparison value
+        boolean flag = false; // whether the condition holds
+        
+        /* The condition is "less-than". */
+        if (condition.equals("is-less-than") || condition.equals("<")) {
+          flag = counter < comparison;
+        }
+        
+        /* The condition is "less-than-or-equal-to". */
+        else if (condition.equals("is-less-than-or-equal-to")
+        || condition.equals("<=")) {
+          flag = counter <= comparison;
+        }
+        
+        /* The condition is "greater-than-or-equal-to". */
+        else if (condition.equals("is-greater-than-or-equal-to")
+        || condition.equals(">=")) {
+          flag = counter >= comparison;
+        }
+        
+        /* The condition is "greater-than". */
+        else if (condition.equals("is-greater-than")
+        || condition.equals(">")) {
+          flag = counter > comparison;
+        }
+        
+        /* Find the location of the ID only if the condition holds. */
+        if (flag) return findID(id);
+        
+        /* If the condition does not hold, return at the next line. */
+        else return mainReader;
+      }
+      
+      /* The file does not specify a conditional. */
+      else return findID(id);
     }
     
     /* No second argument exists. */

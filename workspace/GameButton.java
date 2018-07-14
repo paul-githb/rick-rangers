@@ -10,6 +10,7 @@ public class GameButton extends JButton
   
   public GameButton(Scene scene, String title, int lnk, int x, int y)
   {
+    /* Initialize instance variables. */
     this.scene = scene;
     label = title;
     link = lnk;

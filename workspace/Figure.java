@@ -19,13 +19,13 @@ public class Figure extends JLabel
   private double relativeSize = 1.0; // the current scale of the images
   
   private long start_move; // the time in ms when movement began
-  private int id; // the character's unique identification label
+  private String id; // the character's unique identification label
   private int currentState; // the current appearance of the character
   
   /* Animation-specific constant static fields */
   public static final int STILL = 0; // still image
-  public static final int LEFT_LEG_UP = 1; // motion with left leg up
-  public static final int RIGHT_LEG_UP = 2; // motion with right leg up
+  public static final int LEFT = 1; // motion with left leg up
+  public static final int RIGHT = 2; // motion with right leg up
   public static final int ACTION1 = 3; // first action/attack image
   public static final int ACTION2 = 4; // second action/attack image
   
@@ -34,32 +34,32 @@ public class Figure extends JLabel
   /* CONSTRUCTORS */
   
   /** Default constructor for the Figure class. Creates a mob by default
-   *  at position (0, 0) with the default size of 0.2. */
+   *  at position (0, 0) with the default size. */
   public Figure()
   {
-    this("mob", 0);
+    this("mob", "");
   }
   
   /** Constructor for the Figure class which specifies the name of the
    *  character to create and its id. Positions the character at (0, 0)
-   *  with the default size of 0.2.
+   *  with the default size.
    *  @param name   The name of the character.
    *  @param id     The identification label.*/
-  public Figure(String name, int id)
+  public Figure(String name, String id)
   {
     this(name, id, 0, 0);
   }
   
   /** Constructor for the Figure class which specifies the name of the
    *  character, its id, and its initial position. Sets the size of the
-   *  character to the default size of 0.2.
+   *  character to the default size.
    *  @param name   The name of the character.
    *  @param id     The identification label.
    *  @param x0     The initial horizontal position in pixels.
    *  @param y0     The initial vertical position in pixels. */
-  public Figure(String name, int id, int x0, int y0)
+  public Figure(String name, String id, int x0, int y0)
   {
-    this(name, id, x0, y0, 1.0);
+    this(name, id, x0, y0, 1.0, "absolute");
   }
   
   /** Constructor for the Figure class which specifies the name and id
@@ -68,8 +68,10 @@ public class Figure extends JLabel
    *  @param id     The identification label.
    *  @param x0     The initial horizontal position in pixels.
    *  @param y0     The initial vertical position in pixels.
-   *  @param size   The initial relative size of the character. */
-  public Figure(String name, int id, int x0, int y0, double size)
+   *  @param size   The initial relative size of the character.
+   *  @param type   The type of sizing, either relative or absolute. */
+  public Figure
+  (String name, String id, int x0, int y0, double size, String type)
   {
     /* Initialize position fields and id. Speed is initialized to zero. */
     x = x0;
@@ -77,7 +79,7 @@ public class Figure extends JLabel
     this.id = id;
     
     /* Initialize animation-specific fields. */
-    resizeAndTransformInto(0.2 * size, name);
+    resizeAndTransformInto(size, type, name);
   }
   
   
@@ -88,11 +90,16 @@ public class Figure extends JLabel
    *  dimensions of the character are multiplied by the parameter.
    *  The type of character remains the same. If a non-positive
    *  number is sent in, then the size remains the same.
-   *  @param size   The factor by which to scale the character. */
-  public void resize(double size)
+   *  @param size   The factor by which to scale the character.
+   *  @param type   The type of sizing, either relative or absolute. */
+  public void resize(double size, String type)
   {
-    setRelativeSize(relativeSize * size);
+    /* Check to see if the type is relative or absolute. */
+    if (type.equals("relative")) setRelativeSize(relativeSize * size);
+    else setRelativeSize(size);
+    
     loadImages();
+    Game.getCurrentScene().repaint();
   }
   
   /** Changes the type of character given by its name. The dimensions
@@ -103,18 +110,24 @@ public class Figure extends JLabel
   {
     setType(name);
     loadImages();
+    Game.getCurrentScene().repaint();
   }
   
   /** Performs two functions: resizes the character and changes the
    *  type of character. See void resize(double) and
    *  void transformInto(String).
    *  @param size   The factor by which to scale the character.
+   *  @param type   The type of sizing, either relative or absolute.
    *  @param name   The name of the character to switch to. */
-  public void resizeAndTransformInto(double size, String name)
+  public void resizeAndTransformInto(double size, String type, String name)
   {
-    setRelativeSize(relativeSize * size);
+    /* Check to see if the type is relative or absolute. */
+    if (type.equals("relative")) setRelativeSize(relativeSize * size);
+    else setRelativeSize(size);
+    
     setType(name);
     loadImages();
+    Game.getCurrentScene().repaint();
   }
   
   /** Moves the character from its current position to the specified
@@ -230,18 +243,32 @@ public class Figure extends JLabel
   
   /** Returns the character's unique identification label.
    *  @return The character's unique ID. */
-  public int getID()
+  public String getID()
   {
     return id;
   }
   
   /** Sets the appearance of the character when it is not moving.
    *  Use of the public static fields are encouraged.
-   *  @param The animation image number to set appearance. */
-  public void setState(int state)
+   *  @param The animation image state to set appearance. */
+  public void setState(String state)
   {
-    currentState = (STILL <= state && state <= ACTION2) ?
-    state : STILL;
+    /* First, try to see if it's an integer. */
+    try {
+      int newState = Integer.parseInt(state);
+      currentState = (STILL <= newState && newState <= ACTION2) ?
+      newState : STILL;
+    }
+    
+    /* The state is sent as a non-integer. */
+    catch (NumberFormatException e) {
+      /* Set the state based on its keyword. */
+      if (state.equals("left")) currentState = LEFT;
+      else if (state.equals("right")) currentState = RIGHT;
+      else if (state.equals("action1")) currentState = ACTION1;
+      else if (state.equals("action2")) currentState = ACTION2;
+      else currentState = STILL;
+    }
   }
   
   
@@ -249,14 +276,11 @@ public class Figure extends JLabel
   /* PRIVATE MEMBER FUNCTIONS */
   
   /** Sets the type of character represented by the current Figure.
-   *  The type is any name specified in the FigureType enum, and
-   *  is not case-sensitive. If an invalid name is sent in, then
-   *  a mob is created instead.
+   *  The type is any name specified in the FigureType enum.
+   *  If an invalid name is sent in, then a mob is created instead.
    *  @param name   The name of the character. */
   private void setType(String name)
   {
-    name = name.toLowerCase();
-    
     /* Figure out the relevant FigureType ID. */
     if (name.equals("jason")) type = FigureType.JASON;
     else if (name.equals("paul")) type = FigureType.PAUL;
@@ -307,7 +331,7 @@ public class Figure extends JLabel
       long current = System.currentTimeMillis();
       long delta = 500; // ms in between changes in appearance
       icon = ((current - start_move) / delta % 2 == 0) ?
-      images[LEFT_LEG_UP] : images[RIGHT_LEG_UP];
+      images[LEFT] : images[RIGHT];
     }
     
     /* Display the image in the correct location.
@@ -330,7 +354,7 @@ public class Figure extends JLabel
         int x0 = 3, y0 = 4; // distance from origin: 5
         int x1 = 0, y1 = 0;
         int speed = 1; // 1 px/sec: 5 seconds total
-        Figure fig = new Figure("enemy", 1, x0, y0);
+        Figure fig = new Figure("enemy", "enemy1", x0, y0);
         fig.moveTo(x1, y1, speed);
       }
     };
@@ -340,7 +364,7 @@ public class Figure extends JLabel
         int x0 = 3, y0 = 4; // distance from origin: 5
         int x1 = 0, y1 = 0;
         int speed = 1; // 1 px/sec: 5 seconds total
-        Figure fig = new Figure("mob", 2, x0, y0);
+        Figure fig = new Figure("mob", "mob1", x0, y0);
         fig.moveTo(x1, y1, speed * 2);
       }
     };
