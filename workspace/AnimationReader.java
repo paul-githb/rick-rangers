@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 /** A file reader specifically designed for the handling of this project's
  *  animation files. The syntax for each command MUST be correct for its
@@ -46,6 +46,8 @@ public class AnimationReader
   
   /** The main reader processing the file. */
   private BufferedReader mainReader;
+  
+  /** To add pre-compiled patterns here. */
   
   /** Performs animations based on each scene's respective animation file.
       @param scene    The scene to animate on the screen.
@@ -93,7 +95,7 @@ public class AnimationReader
         /* Add a character into the scene. */
         if (command.equals("add")) {
           handleAdd(tokens);
-        } // add [global|local] [name] [id] [[x]] [[y]] [[size]]
+        } // add [global|local] [name] [id] [[x]] [[y]] [[size]] [[type]]
         
         /* Remove a character from the scene. */
         else if (command.equals("remove")) {
@@ -184,6 +186,9 @@ public class AnimationReader
   public boolean isAnimationFile(String file)
   {
     try {
+      /* The correct pattern for an animation scene-id. */
+      Pattern pattern = Pattern.compile("\\d+");
+      
       /* Load the file. */
       BufferedReader reader
       = new BufferedReader
@@ -197,21 +202,12 @@ public class AnimationReader
         /* Separate the first line into individual tokens. */
         String[] tokens = line.split(" ");
         
-        /* Make sure there are 2-3 tokens and the first says "ANIMATION". */
-        if (tokens.length == 2 || tokens.length == 3
-        && tokens[0].toLowerCase().equals("animation")) {
-          try {
-            /* Verify that the second token is an integer. */
-            Integer.parseInt(tokens[1]);
-            
-            /* Since all tests have passed, return true. */
-            return true;
-          }
-          
-          /* Called if the second token is not an integer. */
-          catch (NumberFormatException e) {
-            System.out.println("Error: Second token is a non-integer.");
-          }
+        /* Make sure the format follows: "ANIMATION [id] [[background]]
+         * Also make sure that the scene-id is a natural number. */
+        if ( (tokens.length == 2 || tokens.length == 3)
+        && tokens[0].toLowerCase().equals("animation")
+        && pattern.matcher(tokens[1]).matches() ) {
+          return true;
         }
       }
     } catch (IOException e) {
@@ -247,11 +243,15 @@ public class AnimationReader
       
       /* Return the second token as the scene ID. */
       return Integer.parseInt(tokens[1]);
-    } catch (IOException e) {
+    }
+    
+    catch (IOException e) {
       /* Print an error message. */
       System.out.println
       ("Error while reading " + file + " in extractSceneID()");
-    } catch (NumberFormatException e) {
+    }
+    
+    catch (NumberFormatException e) {
       System.out.println
       ("Error: Animation file not validated before calling extract.");
     }
@@ -285,17 +285,25 @@ public class AnimationReader
       
       /* Return the third token as the scene BG, if it exists. */
       return tokens[2].toLowerCase();
-    } catch (IOException e) {
+    }
+    
+    catch (IOException e) {
       /* Print an error message. */
       System.out.println
       ("Error while reading " + file + " in extractSceneBG()");
-    } catch (IndexOutOfBoundsException e) {}
+    }
+    
+    catch (IndexOutOfBoundsException e) {}
     
     /* An error occurred or the user has not specified a starting BG. */
     return "";
   }
   
-  /** */
+  /** Function to return whether or not a string is an integer. If
+   *  the string contains an integer but also other characters, then
+   *  the function returns false.
+   *  @param s      The String to check.
+   *  @return whether or not the string is an integer. */
   private boolean isInteger(String s)
   {
     Scanner sc = new Scanner(s);
@@ -304,6 +312,11 @@ public class AnimationReader
     return !sc.hasNext();
   }
   
+  /** Function to return whether or not a string is a double. If
+   *  the string contains a double but also other characters, then
+   *  the function returns false.
+   *  @param s      The String to check.
+   *  @return whether or not the string is a double. */
   private boolean isDouble(String s)
   {
     Scanner sc = new Scanner(s);
@@ -313,72 +326,64 @@ public class AnimationReader
   }
   
   /** Handles the add command, which adds a character to a scene.
-      The proper syntax is: add [global|local] [name] [id] [x] [y] [size],
+      The proper syntax is:
+      add [global|local] [name] [id] [x] [y] [size] [type]
       where the keyword "global" denotes a character that can be
       saved and used throughout all scenes, "local" denotes a
       character that is to be used only in the current scene, id is
-      an integer representing the character's unique ID number, x is
+      a string representing the character's unique ID, x is
       the initial horizontal position, y is the initial vertical
-      position, and size is the initial absolute size.
+      position, size is the initial size, and type is the type of
+      sizing used (absolute or relative).
       @param tokens   The line with the add command and arguments. */
   private void handleAdd (String[] tokens)
   {
-    /* Only allow if enough arguments are given along with the command. */
-    if (tokens.length >= 6) {
-      try {
-        /* The type of character created (global or local). */
-        String cType = tokens[1].toLowerCase();
-        
-        /* The character's name as defined by the image file names. */
-        String name = tokens[2].toLowerCase();
-        
-        /* An identification number for the character. */
-        String id = tokens[3].toLowerCase();
-        
-        /* The horizontal position of the character in the window. */
-        int x = 0;
-        if ( tokens.length > 4
-        && isInteger( tokens[4] ) ) x = Integer.parseInt(tokens[4]);
-        
-        /* The vertical position of the base of the character. */
-        int y = 0;
-        if ( tokens.length > 5
-        && isInteger( tokens[5] ) ) y = Integer.parseInt(tokens[5]);
-        
-        /* The size of the character. */
-        double size = 1.0;
-        if (tokens.length > 6
-        && isDouble( tokens[6] ) ) size = Double.parseDouble(tokens[6]);
-        
-        /* The type of sizing used. */
-        String type = "";
-        if (tokens.length > 7
-        && tokens[7].toLowerCase().equals("relative")) {
-          type = "relative";
-        } else {
-          type = "absolute";
-        }
-        
-        /* Add the character to the specified location. */
-        currentScene.addCharacter(cType, name, id, x, y, size, type);
+    try {
+      /* The type of character created (global or local). */
+      String cType = tokens[1].toLowerCase();
+      
+      /* The character's name as defined by the image file names. */
+      String name = tokens[2].toLowerCase();
+      
+      /* An identification number for the character. */
+      String id = tokens[3].toLowerCase();
+      
+      /* The horizontal position of the character in the window. */
+      int x = 0;
+      if ( tokens.length > 4
+      && isInteger( tokens[4] ) ) x = Integer.parseInt(tokens[4]);
+      
+      /* The vertical position of the base of the character. */
+      int y = 0;
+      if ( tokens.length > 5
+      && isInteger( tokens[5] ) ) y = Integer.parseInt(tokens[5]);
+      
+      /* The size of the character. */
+      double size = 1.0;
+      if (tokens.length > 6
+      && isDouble( tokens[6] ) ) size = Double.parseDouble(tokens[6]);
+      
+      /* The type of sizing used. */
+      String type = "absolute";
+      if (tokens.length > 7
+      && tokens[7].toLowerCase().equals("relative")) {
+        type = "relative";
       }
       
-      /* An integer argument is not an integer. */
-      catch (NumberFormatException e) {
-        System.out.println("Add failed: Invalid argument format.");
-      }
+      /* Add the character to the specified location. */
+      currentScene.addCharacter(cType, name, id, x, y, size, type);
     }
     
-    else {
-      /* Print a warning message. */
+    /* Not enough arguments. */
+    catch (IndexOutOfBoundsException e) {
       System.out.println("Add failed: Invalid argument count.");
     }
   }
   
   /** Handles the remove command, which removes a character from the scene.
       The proper syntax is: remove [all|id], where the keyword "all"
-      specifies that all characters are to be removed, whereas id is an
-      integer representing the character's unique ID number.
+      specifies that all characters are to be removed, whereas id is a
+      string representing the character's unique ID.
       @param tokens   The line with the remove command and arguments. */
   private void handleRemove(String[] tokens)
   {
@@ -386,7 +391,10 @@ public class AnimationReader
       /* First check if all characters are to be removed. */
       if (tokens[1].toLowerCase().equals("all")) {
         currentScene.removeAll();
-      } else {
+      }
+      
+      /* Remove only the character with the ID specified. */
+      else {
         /* The character's identification number. */
         String id = tokens[1].toLowerCase();
         
@@ -399,17 +407,12 @@ public class AnimationReader
     catch (IndexOutOfBoundsException e) {
       System.out.println("Remove failed: Invalid argument count.");
     }
-    
-    /* An integer argument is not an integer. */
-    catch (NumberFormatException e) {
-      System.out.println("Remove failed: Invalid argument format.");
-    }
   }
   
   /** Handles the move command, which moves a character in the scene
       from one location to another. The proper syntax is:
-      move [id] [x] [y] [speed], where id is an integer representing
-      the character's unique ID number, x is the new horizontal
+      move [id] [x] [y] [speed], where id is a string representing
+      the character's unique ID, x is the new horizontal
       coordinate, y is the new vertical coordinate, and speed is the
       speed of movement in pixels per second.
       @param tokens   The line with the move command and arguments. */
@@ -444,9 +447,10 @@ public class AnimationReader
   }
   
   /** Handles the set command, which sets the appearance of a character,
-   *  changes the background image, or sets the opacity. The respective
-   *  syntaxes for these commands are "set character [id] [appearance]",
-   *  "set background [background-name]", and "set opacity [0-100]".
+   *  changes the background image, sets the opacity, or sets a character's
+   *  size. The respective syntaxes for these commands are "set character
+   *  [id] [appearance]", "set background [background-name]", "set opacity
+   *  [0-100]", and "set size [id] [size] [absolute|relative]".
    *  @param tokens   The line with the set command and arguments. */
   private void handleSet(String[] tokens)
   {
@@ -596,7 +600,7 @@ public class AnimationReader
   private void handleTransition(String[] tokens)
   {
     try {
-      int duration = Integer.parseInt(tokens[2]); // duration of transition
+      int duration = evaluateTime(tokens[2]); // duration of transition
       String type = tokens[1].toLowerCase();
       
       /* Two types of transitions: in or out. */
@@ -615,9 +619,77 @@ public class AnimationReader
     }
     
     /* An argument is not an integer. */
-    catch (NumberFormatException e) {
-      System.out.println("Transition failed: Invalid argument format.");
+    catch (IllegalArgumentException e) {
+      System.out.println("Transition failed: Invalid argument.");
     }
+  }
+  
+  /** Determines whether a number is specified in seconds or milliseconds,
+   *  and returns the equivalent value in milliseconds. This is useful
+   *  for commands which deal with a time value, like transition or wait.
+   *  No specifier assumes the time has been specified in milliseconds,
+   *  as does an invalid specifier.
+   *  @param token    The time-value token to check.
+   *  @return the equivalent value of token in milliseconds. */
+  private int evaluateTime(String token) throws IllegalArgumentException
+  {
+    Pattern intP = Pattern.compile("[0-9]+");
+    Pattern doubleP = Pattern.compile("[0-9]*\\.?[0-9]+");
+    Pattern charP = Pattern.compile("[a-z]+");
+    Matcher m = doubleP.matcher(token.toLowerCase());
+    
+    /* The value is a double. */
+    if (m.find()) {
+      double duration
+      = Double.parseDouble(m.group()); // retrieve the time value
+      m.usePattern(charP);
+      if (m.find()) { // the file specifies seconds or milliseconds
+        String unit = m.group(); // type of time value (s, ms)
+        
+        /* Return the appropriate duration in milliseconds. */
+        if (isSeconds(unit)) return (int) (duration * 1000);
+      }
+      
+      return (int) duration;
+    }
+    
+    else {
+      m.usePattern(intP);
+      
+      /* The value is an integer. */
+      if (m.find()) {
+        int duration
+        = Integer.parseInt(m.group()); // retrieve the time value
+        m.usePattern(charP);
+        if (m.find()) { // the file specifies seconds or milliseconds
+          String unit = m.group(); // type of time value (s, ms)
+          
+          /* Return the appropriate duration in milliseconds. */
+          if (isSeconds(unit)) return duration * 1000;
+        }
+        
+        return duration;
+      }
+    }
+    
+    System.out.println("Hi");
+    
+    /* The value is not a number. */
+    throw new IllegalArgumentException();
+  }
+  
+  /** Returns whether or not a specific unit-specifying string specifies
+   *  seconds.
+   *  @param token    The unit-specifying string to check.
+   *  @return whether or not the token specifies a second time-value. */
+  private boolean isSeconds(String token)
+  {
+    /* A second value is specified. */
+    if (token.equals("s") || token.equals("sec")
+    || token.equals("second") || token.equals("seconds")) return true;
+    
+    /* A millisecond or other value is specified. */
+    else return false;
   }
   
   /** Handles the display and input regulation of the buttons
@@ -698,9 +770,11 @@ public class AnimationReader
   {
     /* Stop the execution of the program for a given time. */
     try {
-      Thread.sleep
-      ( Integer.parseInt
-      ( tokens[1] ) );
+      long start = System.currentTimeMillis();
+      Thread.sleep(evaluateTime(tokens[1]));
+      long end = System.currentTimeMillis();
+      double elapsed = (end - start) / 1000.0;
+      System.out.printf("Wait time elapsed: %.2fs\n", elapsed);
     }
     
     /* No second argument exists. */
@@ -720,7 +794,7 @@ public class AnimationReader
     
     /* The argument is negative. */
     catch (IllegalArgumentException e) {
-      System.out.println("Wait failed: Argument is negative.");
+      System.out.println("Wait failed: Argument is invalid.");
     }
   }
   
