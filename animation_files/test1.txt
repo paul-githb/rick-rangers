@@ -1,21 +1,21 @@
-ANIMATION 0 AMBULANCE2
+ANIMATION 1 AMBULANCE2
 
 reset counter
 set opacity 0
-wait 3000 ms
+wait 3s
 add local mob first_mob 200 400 0.25
-wait 1000 ms
+wait 1second
 
 id 1
 set opacity 75
-wait 500
+wait 0.5seconds
 set opacity none
 wait 500
 increment counter
 goto 1 if counter < 2
 reset counter
 
-wait 2000 ms
+wait 2000ms
 add global rick hero 50 425 0.25
 wait 1000 ms
 set character hero action1
@@ -88,6 +88,7 @@ end of "run away"
 
 id 6
 transition out 3000 ms
+wait 3.0s
 remove all // Make sure all characters are removed
 clear-text // Make sure text is cleared
 return -1 // animation done
