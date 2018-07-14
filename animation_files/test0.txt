@@ -1,4 +1,4 @@
-ANIMATION 0 CITY1
+ANIMATION 1 CITY1
 
 Transition in 5000 ms.
 Print Hello World!
@@ -38,4 +38,4 @@ Wait 1000 ms.
 Set opacity full
 reset counter
 clear-text
-return 0
+return 1

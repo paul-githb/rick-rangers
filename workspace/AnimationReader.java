@@ -794,16 +794,6 @@ public class AnimationReader
   private BufferedReader handleGoto (String[] tokens)
   {
     try {
-      /* The goto command should always run in this case. */
-      if (tokens.length == 2) {
-        /* Return the location of the specified marked id. */
-        return findID(Integer.parseInt(tokens[1]));
-      }
-      
-      /* The goto command will run depending on the counter variable. */
-      
-      
-      
       /* The ID to search for within the animation file. */
       int id = Integer.parseInt(tokens[1]);
       

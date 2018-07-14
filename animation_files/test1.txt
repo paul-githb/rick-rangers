@@ -1,0 +1,93 @@
+ANIMATION 0 AMBULANCE2
+
+reset counter
+set opacity 0
+wait 3000 ms
+add local mob first_mob 200 400 0.25
+wait 1000 ms
+
+id 1
+set opacity 75
+wait 500
+set opacity none
+wait 500
+increment counter
+goto 1 if counter < 2
+reset counter
+
+wait 2000 ms
+add global rick hero 50 425 0.25
+wait 1000 ms
+set character hero action1
+wait 1000 ms
+set character hero action2
+wait 1000 ms
+
+* // Options for Rick "Hero"
+Shoot 2
+Stay 3
+Run_Away 4
+end
+
+id 2
+wait 1000
+print Rick: *shoots*
+set opacity 25
+wait 1000
+set character first_mob action1
+wait 1000
+remove first_mob
+wait 1000
+set opacity none
+clear-text
+wait 1000
+set character hero left
+
+id 5
+wait 500
+set character hero right
+wait 500
+set character hero left
+increment counter
+goto 5 if counter < 3
+set character hero still
+reset counter
+
+wait 2500
+goto 6
+end of "shoot"
+
+
+id 3
+wait 1000
+set character hero still
+wait 1500
+move first_mob 150 400 25
+move first_mob 150 425 12
+move first_mob 100 425 50
+set opacity 50
+wait 1000
+print Mob: *punches*
+set character first_mob action1
+wait 500
+set character first_mob action2
+remove hero
+wait 1000
+set opacity none
+clear-text
+wait 1500
+goto 6
+end of "stay"
+
+
+id 4 // run away
+print Rick: Aaaahhh!!!
+wait 2000
+move hero -100 425 100
+end of "run away"
+
+id 6
+transition out 3000 ms
+remove all // Make sure all characters are removed
+clear-text // Make sure text is cleared
+return -1 // animation done
