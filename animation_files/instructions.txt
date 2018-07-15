@@ -148,13 +148,14 @@ COMMANDS:
 5.  print
 6.  clear-text
 7.  wait
-8.  goto
-9.  transition
-10. increment
-11. decrement
-12. reset
-13. *
-14. return
+8.  id
+9.  goto
+10. transition
+11. increment
+12. decrement
+13. reset
+14. *
+15. return
 
 #1: add
 -------
@@ -237,47 +238,164 @@ Syntax: move [char-id] [x] [y] [[speed]]
   -----------------
   Syntax: set background [background-name]
 
+  - background-name: The name of the background to set within the scene.
+                     The available backgrounds are:
+                       1. ambulance1
+                       2. ambulance2
+                       3. ambulance3
+                       4. boat1
+                       5. building1
+                       6. building2
+                       7. city1
+                       8. city2
+                       9. office1
+                      10. office2
+                      11. title     <- Invalid keywords default to this
+
   C. set opacity
   --------------
   Syntax: set opacity [value]
+
+  - value: The opacity value of the scene to set. You can specify the opacity
+           value in multiple ways:
+             1. Pure Integer: A pure integer value, either 0 or 1: fully
+                              transparent, or fully opaque.
+             2. Integer%: The opacity value is formatted in the following
+                          way: [integer]%. For example, 20%. The values range
+                          from 0% up to 100%.
+             3. Pure Double: A pure double value, between 0.0 and 1.0: fully
+                             transparent to fully opaque, or anything in
+                             between.
+             4. Double%: Same as {2}, but this time as a double. For example,
+                         20.524%.
 
   D. set size
   -----------
   Syntax: set size [char-id] [value] [[relative|absolute]]
 
+  - char-id: The one-word identifier that's used to identify the unique
+             character within the scene to set a size to.
+  - value: Sets the size of the character, where 1.0 is the size of the
+           reference height, a value greater will increase size, and a
+           value less will decrease size. The default value is 1.0.
+           Alternatively, you could use a percentage: 100% (or 100.0%)
+           is the size of the reference height.
+
+           (Copy-and-pasted from above. Note that you specify the size
+           value in the same way you specify the opacity value, but it's
+           different in the way it's interpreted as well as in its range.)
+  [optional]
+  - "absolute": Sets the reference height to the height of the window. This is
+                the default value.
+  - "relative": Sets the reference height to the character's current height.
+
 #5: print
 ---------
 Syntax: print [space-separated message to print]
+
+- The print statement does NOT require any quotation marks "" or underscores (_),
+  and they will instead be interpreted as part of the print message.
+
+- The print statement appends a line of text to the screen. If the message is
+  too long, it will NOT wrap to a new line on the screen.
+
+- Calling the print command does NOT refresh the text on the screen. Instead,
+  it appends a new line of text. (This was done intentionally.)
+
+- If over five lines of text are already on-screen and you call the print command,
+  only the last five lines of text will be displayed.
 
 #6: clear-text
 --------------
 Syntax: clear-text
 
+- Clears all text on the screen and, as a result, removes the text box as well.
+
 #7: wait
 --------
 Syntax: wait [time-value]
 
-#8: goto
+- time-value: The amount of time to wait. This time-value can be conveniently
+              formatted in one of the following ways:
+                1. [value]s    <- where value is the time in seconds.
+                2. [value]ms   <- where value is the time in milliseconds.
+                3. [value]     <- where value is the time in milliseconds.
+
+              Any other format SHOULD be ignored (hopefully). I was messing
+              around with regexps the other day and I still don't really have
+              a really good grasp of it. But if it's typed correctly it works.
+
+#8: id
+------
+Syntax: id [line-id]
+
+- line-id: A positive integer used to reference this line of the animation file
+           somewhere else within the document.
+
+#9: goto
 --------
 Syntax: goto [line-id] [[ if counter [relational-operator] [value] ]]
 
-#9: transition
+- line-id: A positive integer used to reference a line within the file to
+           jump to.
+
+if counter [relational-operator] [value]: {OPTIONAL}
+-> relational-operator: One of the following keywords/keys:
+                          1. <      OR      is-less-than
+                          2. >      OR      is-greater-than
+                          3. <=     OR      is-less-than-or-equal-to
+                          4. >=     OR      is-greater-than-or-equal-to
+   Note that if you use one of the phrases, you must put dashes in between words.
+-> value: The value to compare counter with, using one of the relational
+          operators listed above. The value is an INTEGER, not a double.
+
+The value of including the if statement along with the goto statement is that
+you can employ simple looping of animations without having to explicitly type
+them up one-by-one. The counter-variable, built into the AnimationReader class,
+is compared using the relational operator to the specified value and, if the
+condition holds, the goto statement executes. Otherwise, the reader moves onto
+the next line. (Maybe we'll add support for a small "else" statement. Maybe.)
+
+#10: transition
 --------------
 Syntax: transition [in|out] [time-value]
 
-#10: increment
+- "in": Specifies that the scene should start out hidden and slowly become
+        more transparent.
+- "out": Specifies that the scene should start out transparent and slowly
+         become more opaque.
+- time-value: How long the transition should last. The value can be specified
+              in one of the following ways, similar to the "wait" command:
+                1. [value]s    <- where value is the time in seconds.
+                2. [value]ms   <- where value is the time in milliseconds.
+                3. [value]     <- where value is the time in milliseconds.
+
+              Again: hopefully it works. :P
+
+Note: The transition is linear, so the opacity changes by the same amount each
+      time frame.
+
+#11: increment
 --------------
 Syntax: increment counter
 
-#11: decrement
+- Increments the value stored in the counter variable by 1. I.e. if the counter
+  currently stores 0, it'll be incremented to 1.
+
+#12: decrement
 --------------
 Syntax: decrement counter
 
-#12: reset
+- Decrements the value stored in the counter variable by 1. I.e. if the counter
+  currently stores 0, it'll be decremented to -1.
+
+#13: reset
 ----------
 Syntax: reset counter
 
-#13: *
+- Resets the value stored in the counter variable back to 0.
+
+#14: *
 ------
 Syntax:
 *
@@ -287,6 +405,25 @@ Button_Label_3 [line-id]
 ...
 end
 
-#14: return
+where Button_Label_1 is the text displayed on the top button, Button_Label_2
+is the text displayed on the second button, and so on.
+
+- line-id: A positive integer representing the line to jump to if this button
+           is pressed.
+
+When the reader encounters a button list definition, it waits for the player
+to click one of the buttons before moving on. When the player presses one of
+the buttons, the button list is destroyed and the reader jumps to the specified
+line-id.
+
+#15: return
 -----------
 Syntax: return [next-scene-id]
+
+- next-scene-id: The ID number of the next scene to animate.
+
+The return statement causes the animation to finish, and moves onto the next
+scene for animation, if the animation file with that specific scene-id exists
+and has been loaded. Note that only animations with a scene-id of 0 or greater
+is loaded, and so by specifying -1, you can tell the program to finish the
+execution of all animations in the game (effectively stopping the program).
