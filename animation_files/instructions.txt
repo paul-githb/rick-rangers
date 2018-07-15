@@ -77,8 +77,8 @@ Wait 2s /* The transition command runs on a thread; thus, you need to include
 
 IN THE ABOVE EXAMPLE, lines 3 and 4 will produce UNEXPECTED RESULTS because
 the * character is a built-in command. However, Lines 1 and 2 are FINE because
-the lines have already specified all of the required commands, and as an added
-bonus, have already specified all of the commands.
+the lines have already specified all of the required arguments, and as an added
+bonus, have already specified all of the arguments.
 
 -> Finally, consider the * command, which (as you'll see later) marks a button
 list to create a list of buttons that the user can click. Some structural
