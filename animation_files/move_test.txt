@@ -1,0 +1,22 @@
+ANIMATION 0 BUILDING1
+
+# INITIAL ENTRY
+Transition in 5s
+Wait 5s
+
+MOVE TEST
+---------
+
+# Add two characters.
+Add local rick rick1 200 500 0.3
+Add local sam sam1 400 500 0.3
+
+# Move the two characters at once.
+Move rick1 600 500 100
+Wait 1s
+Move sam1 800 500 100
+Wait 1s
+Transition out 2s
+Wait 2s
+Remove all
+return -1

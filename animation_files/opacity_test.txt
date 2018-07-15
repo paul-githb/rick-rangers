@@ -1,0 +1,82 @@
+ANIMATION -1 BUILDING1
+
+# INITIAL ENTRY:
+Transition in 5s
+Wait 5s
+
+OPACITY TEST
+------------
+
+# OPTION 1: Integer%.
+Set opacity -10%
+print set opacity to -10%
+Wait 1s
+Set opacity 0%
+print set opacity to 0%
+wait 1s
+Set opacity 30%
+print set opacity to 30%
+wait 1s
+Set opacity 100%
+print set opacity to 100%
+wait 1s
+Set opacity 110%
+print set opacity to 110%
+wait 1s
+clear-text
+
+
+# OPTION 2: Integer.
+Set opacity -1
+print set opacity to -1.
+Wait 1s
+set opacity 0
+print set opacity to 0
+wait 1s
+set opacity 1
+print set opacity to 1
+wait 1s
+set opacity 2
+print set opacity to 2
+wait 1s
+set opacity -2
+print set opacity to -2
+wait 1s
+clear-text
+
+# OPTION 3: Double.
+set opacity -0.5
+print set opacity to -0.5
+wait 1s
+set opacity 0.0
+print set opacity to 0.0
+wait 1s
+set opacity 0.3
+print set opacity 0.3
+wait 1s
+set opacity 1.0
+print set opacity 1.0
+wait 1s
+set opacity 99.0
+print set opacity 99.0
+wait 1s
+clear-text
+
+
+# OPTION 4: Double%.
+set opacity -50.5%
+print set opacity to -50.5%
+wait 1s
+set opacity 0.0%
+print set opacity to 0.0%
+wait 1s
+set opacity 30.5%
+print set opacity to 30.5%
+wait 1s
+set opacity 94.7%
+print set opacity to 94.7%
+wait 1s
+set opacity 193.1%
+print set opacity to 193.1%
+wait 1s
+clear-text

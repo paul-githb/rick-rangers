@@ -1,0 +1,282 @@
+INTRODUCTION:
+------------
+An animation file is a file that specifies/marks all of the animations used
+to animate the scenes in this project. In marking up an animation file, the
+use of whitespace is important; I would recommend following the guidelines
+specified in this text document exactly, but there might be some room for
+slack otherwise.
+
+Each scene will have its own animation file written, as well as a specific
+scene-id that is used to identify it. The following sections will show how
+to create a new scene with a scene-id. This scene-id will be used to navigate
+among different scenes. Note that the scene-id must be a whole number that's
+greater than or equal to 0: {0, 1, 2, 3, ...}.
+
+Other than a scene-id, there is also what's called a line-id, which identifies
+a line within an animation file with a specific number. This number has to be
+a whole number greater than or equal to 0, similar to a scene-id. This line-id
+will be used to reference a specific line within the same animation file
+document, and will allow you to manipulate the flow of the animation itself.
+
+A final id type that is used within animation files are character-ids. These
+are one-word id types which are used to reference specific characters within
+the current scene being processed. (You can still use numbers to identify
+them, but I didn't really want us to get mixed up between line-ids and
+character-ids.) When modifying a certain character such as its size, location,
+or appearance, you reference it using its unique character-id.
+
+If you think we should add more commands or modify certain commands, just
+let me know and we'll hopefully figure out a way to do that.
+
+FYI, if you find that an uncaught exception is thrown (it'll show up in the
+console with some nasty error message, or if you're using BlueJ it'll show up
+in red text at the bottom), let me know and I'll make sure it's caught.
+
+BASIC STRUCTURE:
+---------------
+
+ANIMATION [scene-id] [background-name]
+// insert code here
+return [next-scene-id]
+
+- scene-id: A number assigned to the scene this animation file defines;
+            the scene-id 0 is the first scene animated.
+- background-name: The name of the background image first displayed in this scene.
+- next-scene-id: The scene-id of the next scene to animate; -1 to quit.
+
+Some basic structural rules:
+
+-> Each command must be written on its own line.
+
+-> Each individual argument must be separated by some space.
+
+-> The required arguments need to be provided.
+
+-> Arguments that are not required do not need to be provided, but if you
+   do, then you MUST provide the non-required arguments listed previously.
+   i.e. for the "add" command below, if you want to define the initial size,
+   you'll have to provide the new character's x and y coordinates too.
+
+-> If you specified all of the required arguments, you can add additional
+   notes or comments afterwards on the same line. If you filled up every
+   argument (required or not), then it doesn't matter how you do it; however,
+   if you left out some arguments that are not required, make sure that
+   your comment doesn't trigger some unexpected results. The best way to
+   do this is to just start every comment with '#' or '//' or whatever other
+   symbol is comfortable for you to denote as a comment.
+
+-> As long as the first word doesn't match one of the built-in commands listed
+   below, you can write whatever comment you'd like on a new line.
+
+For example:
+
+Transition in 2s # This creates a smooth 2 second transition into the scene.
+Wait 2s /* The transition command runs on a thread; thus, you need to include
+         * this if you don't want anything to run while the transition is
+         * being executed. */
+
+IN THE ABOVE EXAMPLE, lines 3 and 4 will produce UNEXPECTED RESULTS because
+the * character is a built-in command. However, Lines 1 and 2 are FINE because
+the lines have already specified all of the required commands, and as an added
+bonus, have already specified all of the commands.
+
+-> Finally, consider the * command, which (as you'll see later) marks a button
+list to create a list of buttons that the user can click. Some structural
+rules regarding this one command include:
+
+  -> The * command and its corresponding buttons must be separated ONLY by
+     a newline. I.e. They must stay together.
+
+  -> If the button label must have spaces, replace the spaces with an
+     underscore (_) character. These will be replaced with spaces later
+     on. If you need an underscore character, welllll... idk
+
+  -> There must be at least 2 newlines after the last button definition.
+     This is to be able to determine where the last button is defined.
+     Alternatively, what I like to do is this: at the end of every button
+     list, type a line with the keyword "end". For instance:
+
+     *
+     Take_the_letter 1 // When pressed, jump to the line with line-id of 1.
+     Leave 2           // When pressed, jump to the line with line-id of 2.
+     end               // Ends the button list declaration (space is okay too).
+     // insert more code here...
+
+I might've forgot something, so just let me know if you have any questions.
+And let's meet up at the library more often :D
+
+Oh yeah, one cool thing about this is that it's not case-sensitive. So, other
+than the obvious print statement and the button labels, you can write in upper-
+case or lower-case, depending on your choosing. Go wild.
+
+HELPFUL TIPS:
+------------
+
+-> Before every return statement, unless you are keeping everything the same
+   on purpose, put the following code:
+
+   remove all
+   clear-text
+   reset counter
+
+   Without "remove all" and "clear-text", when you return to the same scene,
+   the text and the characters that were left over will remain.
+   Without "reset counter", the counter-variable will remain where it was even
+   in the next scene, since it's built into the AnimationReader class and not
+   into the individual scenes themselves. Since the AnimationReader is in
+   charge of reading all the scenes in the game, I guess you could call it a
+   "global" variable. And as for the text and characters, you could call them
+   "local" variables... but we'll get into that later.
+
+   Of course, you could also be super conscientious and reset the counter
+   variable before every loop you use it in. Now that I think about it, that's
+   probably a better thing to do.
+
+   (In case you're wondering, the counter variable just lets you loop through
+   a certain animation a certain number of times, kind of like a for loop.
+   But we'll get into that later with the "goto" command.)
+
+   You could always take a look at the code for the AnimationReader on
+   my GitHub page :D
+
+COMMANDS:
+--------
+1.  add
+2.  remove
+3.  move
+4.  set
+5.  print
+6.  clear-text
+7.  wait
+8.  goto
+9.  transition
+10. increment
+11. decrement
+12. reset
+13. *
+14. return
+
+#1: add
+-------
+Syntax:
+add [global|local] [name] [char-id] [[x]] [[y]] [[size]] [[absolute|relative]]
+
+- "global": Attempt to retrieve a global character that is used in multiple
+            scenes.
+- "local": Create a new, local character within the current scene only.
+- name: The name of the character. The following names are available:
+          1. enemy
+          2. mob
+          3. jason
+          4. paul
+          5. rick
+          6. sam
+          7. shin
+          8. heather
+- char-id: A one-word identifier used to identify the specific character later
+           on in the animation file.
+- x [optional]: The initial x-coordinate. Note that the window extends on the
+                interval [0, 1000], but you may choose a coordinate outside this
+                range. Also note that the character will be painted on the
+                center of this x-coordinate. The default value is 0.
+- y [optional]: The initial y-coordinate. The window extends on the interval
+                [0, 500] here, where 0 is the top and 500 is the bottom. Also,
+                the character's base/feet will be painted on this y-coordinate.
+                The default value is 0.
+- size [optional]: Sets the size of the character, where 1.0 is the size of the
+                   reference height, a value greater will increase size, and a
+                   value less will decrease size. The default value is 1.0.
+                   Alternatively, you could use a percentage: 100% (or 100.0%)
+                   is the size of the reference height.
+[optional]
+- "absolute": Sets the reference height to the height of the window. This is
+              the default value.
+- "relative": Sets the reference height to the character's current height. The
+              default value is instead "absolute", but it doesn't matter much
+              here since the default character size is the height of the
+              window.
+
+#2: remove
+----------
+Syntax: remove [add|char-id]
+
+- "all": Removes all characters in the scene.
+- char-id: The one-word identifier that's used in this case to identify the
+           unique character within the scene to remove.
+
+#3: move
+--------
+Syntax: move [char-id] [x] [y] [[speed]]
+
+- char-id: The one-word identifier that's used in this case to identify the
+           unique character within the scene to move from one place to another.
+- x: The x-coordinate to move this character to.
+- y: The y-coordinate to move this character to.
+- speed [optional]: The speed to move the character with in pixels per second.
+                    The default value is 1/10 the width of the window; with
+                    the 1000-pixel-wide window that would be 100 px/s.
+
+#4: set
+-------
+
+  A. set character
+  ----------------
+  Syntax: set character [char-id] [appearance]
+
+  B. set background
+  -----------------
+  Syntax: set background [background-name]
+
+  C. set opacity
+  --------------
+  Syntax: set opacity [value]
+
+  D. set size
+  -----------
+  Syntax: set size [char-id] [value] [[relative|absolute]]
+
+#5: print
+---------
+Syntax: print [space-separated message to print]
+
+#6: clear-text
+--------------
+Syntax: clear-text
+
+#7: wait
+--------
+Syntax: wait [time-value]
+
+#8: goto
+--------
+Syntax: goto [line-id] [[ if counter [relational-operator] [value] ]]
+
+#9: transition
+--------------
+Syntax: transition [in|out] [time-value]
+
+#10: increment
+--------------
+Syntax: increment counter
+
+#11: decrement
+--------------
+Syntax: decrement counter
+
+#12: reset
+----------
+Syntax: reset counter
+
+#13: *
+------
+Syntax:
+*
+Button_Label_1 [line-id]
+Button_Label_2 [line-id]
+Button_Label_3 [line-id]
+...
+end
+
+#14: return
+-----------
+Syntax: return [next-scene-id]

@@ -1,4 +1,4 @@
-ANIMATION 0 CITY1
+ANIMATION -1 CITY1
 
 Transition in 5000 ms.
 Print Hello World!
@@ -15,7 +15,7 @@ SET backGround ambulance1
 Wait 1000 ms.
 Set opacity none
 Wait 1000 ms.
-Set opacity 25
+Set opacity 25%
 
 id 1
 // PUNCHING ACTION
@@ -26,11 +26,11 @@ Wait 100 ms.
 increment ctr
 goto 1 if ctr < 5
 
-Set opacity none
+Set opacity 0.0percent
 Wait 100 ms.
-set size first_mob 1.5 relative
+set size first_mob 150% relative
 Wait 1000 ms.
-set size first_mob 0.75 absolute
+set size first_mob 75.0percent absolute
 print Bye!
 Wait 2000 ms.
 Remove all characters from the scene.

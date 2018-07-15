@@ -1,0 +1,22 @@
+ANIMATION -1
+
+# INITIAL ENTRY:
+Transition in 5s
+Wait 5s
+
+WAIT TEST
+---------
+
+# OPTION 1: Integer w/o units.
+print waiting for -1000
+wait -1000
+print waiting for 10
+wait 10
+print waiting for 1000
+wait 1000
+print waiting for 3000
+wait 3000
+print waiting for 100
+wait 100
+clear-text
+

@@ -1,4 +1,4 @@
-ANIMATION 1 AMBULANCE2
+ANIMATION -1 AMBULANCE2
 
 reset counter
 set opacity 0
@@ -7,7 +7,7 @@ add local mob first_mob 200 400 0.25
 wait 1second
 
 id 1
-set opacity 75
+set opacity .75
 wait 0.5seconds
 set opacity none
 wait 500
@@ -32,7 +32,7 @@ end
 id 2
 wait 1000
 print Rick: *shoots*
-set opacity 25
+set opacity 25%
 wait 1000
 set character first_mob action1
 wait 1000
@@ -65,7 +65,7 @@ wait 1500
 move first_mob 150 400 25
 move first_mob 150 425 12
 move first_mob 100 425 50
-set opacity 50
+set opacity 50.0percent
 wait 1000
 print Mob: *punches*
 set character first_mob action1
