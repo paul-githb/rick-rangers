@@ -217,6 +217,11 @@ Syntax: move [char-id] [x] [y] [[speed]]
                     The default value is 1/10 the width of the window; with
                     the 1000-pixel-wide window that would be 100 px/s.
 
+NOTE: The move command runs on a thread; as a result, the AnimationReader does
+      NOT wait for the character to finish moving before continuing to process
+      the rest of the file. If you'd like there to be some pause while the
+      character is moving, just use the "wait" command defined later.
+
 #4: set
 -------
 
@@ -374,6 +379,10 @@ Syntax: transition [in|out] [time-value]
 
 Note: The transition is linear, so the opacity changes by the same amount each
       time frame.
+
+      Also, the transition effect runs on a thread; as a result, you may have
+      to use the "wait" command in conjunction in order to get your desired
+      effect.
 
 #11: increment
 --------------
