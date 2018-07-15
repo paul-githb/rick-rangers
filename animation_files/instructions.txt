@@ -223,6 +223,16 @@ Syntax: move [char-id] [x] [y] [[speed]]
   ----------------
   Syntax: set character [char-id] [appearance]
 
+  - char-id: The one-word identifier that's used to identify the unique
+             character within the scene to set the appearance of.
+  - appearance: The specific appearance to set the character to. The following
+                keywords are available:
+                  1. still     <- The character is standing still.
+                  2. left      <- The character's left leg is up.
+                  3. right     <- The character's right leg is up.
+                  4. action1   <- The character's action, part 1.
+                  5. action2   <- The character's action, part 2.
+
   B. set background
   -----------------
   Syntax: set background [background-name]
