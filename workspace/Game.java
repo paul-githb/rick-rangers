@@ -162,14 +162,4 @@ public class Game extends JFrame
   {
     return currentScene;
   }
-  
-  
-  
-  /* TESTER METHODS */
-  
-  public static void main(String[] args)
-  {
-    Game game = new Game();
-    game.run();
-  }
 }

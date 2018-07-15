@@ -698,34 +698,8 @@ public class AnimationReader
   private int evaluateTime(String token) throws IllegalArgumentException
   {
     Matcher m
-    = (Pattern.compile(positive_int + ".*")).matcher
+    = (Pattern.compile(positive_double + ".*")).matcher
     (token.toLowerCase());
-    
-    /* The value is an integer. */
-    if (m.matches()) {
-      
-      /* Retrieve the integer. */
-      m.reset();
-      m.usePattern(positive_int);
-      m.find();
-      int duration = Integer.parseInt(m.group());
-      
-      /* Determine whether it's s, ms, or neither. */
-      m.usePattern(alphabet);
-      
-      /* Units are included. */
-      if (m.find()) {
-        String unit = m.group();
-        if (unit.equals("s")) return duration * 1000;
-        else if (unit.equals("ms")) return duration;
-      }
-      
-      /* Units are not included. */
-      else return duration;
-    }
-    
-    m.usePattern
-    (Pattern.compile(positive_double + ".*"));
     
     /* The value is a double. */
     if (m.matches()) {
@@ -748,6 +722,32 @@ public class AnimationReader
       
       /* Units are not included. */
       else return (int) duration;
+    }
+    
+    m.usePattern
+    (Pattern.compile(positive_int + ".*"));
+    
+    /* The value is an integer. */
+    if (m.matches()) {
+      
+      /* Retrieve the integer. */
+      m.reset();
+      m.usePattern(positive_int);
+      m.find();
+      int duration = Integer.parseInt(m.group());
+      
+      /* Determine whether it's s, ms, or neither. */
+      m.usePattern(alphabet);
+      
+      /* Units are included. */
+      if (m.find()) {
+        String unit = m.group();
+        if (unit.equals("s")) return duration * 1000;
+        else if (unit.equals("ms")) return duration;
+      }
+      
+      /* Units are not included. */
+      else return duration;
     }
     
     /* The argument is invalid. */
@@ -872,7 +872,7 @@ public class AnimationReader
       String line = "";
       
       /* Read each line in the animation text file. */
-      while ( (line = reader.readLine() ) != null)
+      while ( (line = reader.readLine().toLowerCase() ) != null)
       {
         /* The line is empty. */
         if (line.equals("")) {

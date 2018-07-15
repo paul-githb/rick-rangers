@@ -345,8 +345,4 @@ public class Figure extends JLabel
     int paintY = (int) y - icon.getIconHeight();
     icon.paintIcon(this, g, paintX, paintY);
   }
-  
-  
-  
-  /* TESTER METHODS */
 }

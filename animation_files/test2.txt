@@ -1,0 +1,134 @@
+ANIMATION 0 BUILDING1
+
+INITIAL SETUP
+-------------
+Add local rick rick1 0 500 30% // New character added w/ ID:"rick1"
+Add local jason json1 100 500 30% // New character added w/ ID:"json1"
+
+INITIAL ENTRY: 00:00 -> 00:03
+-----------------------------
+Transition in 3s // Start a 3 second transition into the scene.
+Move rick1 300 500 // Move ID:"rick1" right for 3 seconds.
+Move json1 400 500 // Move ID:"json1" right for 3 seconds.
+Wait 3s // Wait for 3 seconds to finish transition and moves.
+Add local mob mob1 600 500 30% // New character added w/ ID:"mob1"
+
+BRIDGE: 00:03 -> 00:08
+----------------------
+Wait 1s // Pause for a slight amount of time.
+Print Rick: "Oh no!"
+Wait 3s // Pause for some additional time.
+Clear-text // Clear all text on the screen.
+Wait 1s
+
+MOB GROWS IN SIZE: 00:08 -> 00:12
+---------------------------------
+reset counter // Make sure counter starts at 0.
+
+Id 1 // Start of our loop.
+Set size mob1 104.73% relative // Increase the size of the mob slightly.
+increment counter // Increment the counter by one.
+Goto 1 if counter < 15 // Loop 15 times, roughly takes 4s.
+
+RESPONSE: 00:12 -> 00:17
+------------------------
+Wait 1s
+reset counter
+
+Id 2 // Jason shuffling his feet.
+Set character json1 left // Left leg up
+Wait 400ms
+Set character json1 right // Right leg up
+Wait 400ms
+Increment counter
+Goto 2 if counter < 2 // Loop twice.
+
+Print Jason: "What should we do??"
+reset counter
+
+Id 3 // Jason continues to shuffle his feet.
+Set character json1 left // Left leg up
+Wait 0.4s
+Set character json1 right // Right leg up
+Wait 0.4s
+increment counter
+Goto 3 if counter < 3 // Loop thrice.
+Set character json1 still
+
+DISPLAY OPTIONS:
+----------------
+ID 4 :
+print Rick: "Hmmm..."
+
+*
+Shoot 5
+Run_Away 6
+Think_More 4
+END
+
+SHOOT:
+------
+ID 5 :
+Clear-text
+Wait 1s
+Set character rick1 action1
+Wait 0.5s
+Set character rick1 action2
+Wait 1s
+// bullet animation later
+
+# Jason shrinks and grows
+
+# Shrink:
+---------
+Reset counter
+ID 8 :
+Set size json1 90% relative
+Increment counter
+Goto 8 if counter < 8
+
+Reset counter
+ID 9 :
+Set size json1 110% relative
+Increment counter
+Goto 9 if counter < 8
+
+# Mob1 dies:
+Set character mob1 action1
+Wait 1.0s
+Remove mob1
+Wait 1s
+Set character rick1 action1
+Wait 0.5s
+Set character rick1 still
+Wait 0.5s
+
+# Jason and Rick cheer!
+Reset counter
+ID 7 :
+Set character rick1 left
+Set character json1 left
+Wait 0.4s
+Set character rick1 right
+Set character json1 right
+Wait 0.4s
+Increment counter
+Goto 7 if counter < 5 // Loop 5 times (4s).
+Print Rick: "We did it!!"
+Print Jason: "We did it!!"
+
+RUN AWAY:
+---------
+ID 6 :
+
+
+FINAL CLEANUP: Make sure the scene is cleared for the next call.
+----------------------------------------------------------------
+Transition out 3s
+Wait 3s
+
+CLEAR-TEXT
+REMOVE ALL
+RESET COUNTER
+
+return -1

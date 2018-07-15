@@ -333,6 +333,7 @@ public class Scene extends JPanel
     
     /* Paint the text box. */
     int num_lines = text.size();
+    int first_line = (num_lines >= 5) ? num_lines - 5 : 0;
     if (num_lines != 0)
     {
       /* The text box. */
@@ -352,44 +353,13 @@ public class Scene extends JPanel
       g.setFont( new Font ( Font.MONOSPACED, Font.BOLD, font_size ) );
       int x = stroke + 2;
       y += font_size;
-      for (int i = 0; i < num_lines; i++)
+      for (int i = first_line; i < num_lines; i++)
       {
         String line = text.get(i);
-        g.drawString(line, x, y + font_size * i);
+        g.drawString(line, x, y + font_size * (i - first_line));
       }
     }
   }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  /* NOTE: None of the current member implementations are to be used,
-  this class is currently being tested. */
-  
-  // Note: If global, search Game class for ID match, otherwise create local.
-  
-  
-  
-  
-  
-  
-  
-  /* TESTER FUNCTIONS */
   
   public String toString()
   {
