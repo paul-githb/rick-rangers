@@ -47,7 +47,10 @@ public class AnimationReader
   /** The main reader processing the file. */
   private BufferedReader mainReader;
   
-  /** To add pre-compiled patterns here. */
+  /** Pre-compiled regex patterns for positive numbers/characters. */
+  private Pattern positive_int = Pattern.compile("[0-9]+");
+  private Pattern positive_double = Pattern.compile("[0-9]*\\.?[0-9]+");
+  private Pattern alphabet = Pattern.compile("[a-z]+");
   
   /** Performs animations based on each scene's respective animation file.
       @param scene    The scene to animate on the screen.
@@ -186,9 +189,6 @@ public class AnimationReader
   public boolean isAnimationFile(String file)
   {
     try {
-      /* The correct pattern for an animation scene-id. */
-      Pattern pattern = Pattern.compile("\\d+");
-      
       /* Load the file. */
       BufferedReader reader
       = new BufferedReader
@@ -206,7 +206,7 @@ public class AnimationReader
          * Also make sure that the scene-id is a natural number. */
         if ( (tokens.length == 2 || tokens.length == 3)
         && tokens[0].toLowerCase().equals("animation")
-        && pattern.matcher(tokens[1]).matches() ) {
+        && positive_int.matcher(tokens[1]).matches() ) {
           return true;
         }
       }
@@ -360,8 +360,7 @@ public class AnimationReader
       
       /* The size of the character. */
       double size = 1.0;
-      if (tokens.length > 6
-      && isDouble( tokens[6] ) ) size = Double.parseDouble(tokens[6]);
+      if (tokens.length > 6) size = evaluatePercent(tokens[6]) / 100.0;
       
       /* The type of sizing used. */
       String type = "absolute";
@@ -377,6 +376,11 @@ public class AnimationReader
     /* Not enough arguments. */
     catch (IndexOutOfBoundsException e) {
       System.out.println("Add failed: Invalid argument count.");
+    }
+    
+    /* Illegal argument found. */
+    catch (IllegalArgumentException e) {
+      System.out.println("Add failed: Illegal argument found.");
     }
   }
   
@@ -429,7 +433,10 @@ public class AnimationReader
       int y = Integer.parseInt(tokens[3]);
       
       /* The speed at which to move. */
-      int speed = Integer.parseInt(tokens[4]);
+      int speed = Game.WIDTH / 10;
+      if (tokens.length > 4 && isInteger(tokens[4])) {
+        speed = Integer.parseInt(tokens[4]);
+      }
       
       /* Move the character within the scene with the given ID. */
       currentScene.moveCharacter(id, x, y, speed);
@@ -488,10 +495,10 @@ public class AnimationReader
         if (opacityStr.equals("none")) opacity = 0;
         else if (opacityStr.equals("full")) opacity = 255;
         
-        /* If no keywords match, then see if it's an integer value. */
+        /* If no keywords match, then see if it's a numerical value. */
         else {
-          /* The opacity level, converting 0-100 into 0-255. */
-          opacity = (int) (Integer.parseInt(tokens[2]) * 2.55);
+          /* The opacity level, from 0 to 255. */
+          opacity = (int) (evaluatePercent(tokens[2]) * 2.55);
           
           /* Verify that the opacity is within bounds. */
           if (opacity < 0) opacity = 0;
@@ -507,8 +514,8 @@ public class AnimationReader
         /* The ID of the character. */
         String char_id = tokens[2];
         
-        /* The size to set. */
-        double size = Double.parseDouble(tokens[3]);
+        /* The size to set, from 0 onward. */
+        double size = evaluatePercent(tokens[3]) / 100.0;
         
         /* Whether the size value is relative or absolute. */
         String type = "";
@@ -540,6 +547,63 @@ public class AnimationReader
     catch (NumberFormatException e) {
       System.out.println("Set failed: Invalid argument format.");
     }
+    
+    /* An argument is invalid. */
+    catch (IllegalArgumentException e) {
+      System.out.println("Set failed: Invalid argument.");
+    }
+  }
+  
+  private double evaluatePercent(String token) throws IllegalArgumentException
+  {
+    Matcher m
+    = (Pattern.compile(positive_int + "%$")).matcher
+    (token.toLowerCase());
+    
+    /* The value is an integer%. */
+    if (m.matches()) {
+      
+      /* Find the integer percentage. */
+      m.reset();
+      m.usePattern(positive_int);
+      m.find();
+      
+      /* Return that percentage. */
+      return Integer.parseInt(m.group());
+    }
+    
+    m.usePattern(positive_int);
+    
+    /* The value is an integer. */
+    if (m.matches()) {
+      
+      return Integer.parseInt(token) * 100;
+    }
+    
+    m.usePattern
+    (Pattern.compile(positive_double + "%$"));
+    
+    /* The value is a double%. */
+    if (m.matches()) {
+      
+      /* Find the double percentage. */
+      m.reset();
+      m.usePattern(positive_double);
+      m.find();
+      
+      /* Return that percentage. */
+      return Double.parseDouble(m.group());
+    }
+    
+    m.usePattern(positive_double);
+    
+    /* The value is a double. */
+    if (m.matches()) {
+      return (int) (Double.parseDouble(token) * 100);
+    }
+    
+    /* The value is not a number. */
+    throw new IllegalArgumentException();
   }
   
   /** Handles the print command, which displays text on the screen.
@@ -633,63 +697,61 @@ public class AnimationReader
    *  @return the equivalent value of token in milliseconds. */
   private int evaluateTime(String token) throws IllegalArgumentException
   {
-    Pattern intP = Pattern.compile("[0-9]+");
-    Pattern doubleP = Pattern.compile("[0-9]*\\.?[0-9]+");
-    Pattern charP = Pattern.compile("[a-z]+");
-    Matcher m = doubleP.matcher(token.toLowerCase());
+    Matcher m
+    = (Pattern.compile(positive_int + ".*")).matcher
+    (token.toLowerCase());
+    
+    /* The value is an integer. */
+    if (m.matches()) {
+      
+      /* Retrieve the integer. */
+      m.reset();
+      m.usePattern(positive_int);
+      m.find();
+      int duration = Integer.parseInt(m.group());
+      
+      /* Determine whether it's s, ms, or neither. */
+      m.usePattern(alphabet);
+      
+      /* Units are included. */
+      if (m.find()) {
+        String unit = m.group();
+        if (unit.equals("s")) return duration * 1000;
+        else if (unit.equals("ms")) return duration;
+      }
+      
+      /* Units are not included. */
+      else return duration;
+    }
+    
+    m.usePattern
+    (Pattern.compile(positive_double + ".*"));
     
     /* The value is a double. */
-    if (m.find()) {
-      double duration
-      = Double.parseDouble(m.group()); // retrieve the time value
-      m.usePattern(charP);
-      if (m.find()) { // the file specifies seconds or milliseconds
-        String unit = m.group(); // type of time value (s, ms)
-        
-        /* Return the appropriate duration in milliseconds. */
-        if (isSeconds(unit)) return (int) (duration * 1000);
-      }
+    if (m.matches()) {
       
-      return (int) duration;
-    }
-    
-    else {
-      m.usePattern(intP);
+      /* Retrieve the double. */
+      m.reset();
+      m.usePattern(positive_double);
+      m.find();
+      double duration = Double.parseDouble(m.group());
       
-      /* The value is an integer. */
+      /* Determine whether it's s, ms, or neither. */
+      m.usePattern(alphabet);
+      
+      /* Units are included. */
       if (m.find()) {
-        int duration
-        = Integer.parseInt(m.group()); // retrieve the time value
-        m.usePattern(charP);
-        if (m.find()) { // the file specifies seconds or milliseconds
-          String unit = m.group(); // type of time value (s, ms)
-          
-          /* Return the appropriate duration in milliseconds. */
-          if (isSeconds(unit)) return duration * 1000;
-        }
-        
-        return duration;
+        String unit = m.group();
+        if (unit.equals("s")) return (int) (duration * 1000);
+        else if (unit.equals("ms")) return (int) (duration);
       }
+      
+      /* Units are not included. */
+      else return (int) duration;
     }
     
-    System.out.println("Hi");
-    
-    /* The value is not a number. */
+    /* The argument is invalid. */
     throw new IllegalArgumentException();
-  }
-  
-  /** Returns whether or not a specific unit-specifying string specifies
-   *  seconds.
-   *  @param token    The unit-specifying string to check.
-   *  @return whether or not the token specifies a second time-value. */
-  private boolean isSeconds(String token)
-  {
-    /* A second value is specified. */
-    if (token.equals("s") || token.equals("sec")
-    || token.equals("second") || token.equals("seconds")) return true;
-    
-    /* A millisecond or other value is specified. */
-    else return false;
   }
   
   /** Handles the display and input regulation of the buttons
@@ -709,9 +771,6 @@ public class AnimationReader
     /* Flag that determines whether the end of the list has been reached. */
     boolean endOfList = false;
     
-    /* The required pattern for the second token of each button declaration. */
-    Pattern pattern = Pattern.compile("\\d+");
-    
     /* The resultant ID of the button that is selected; default is min. */
     int result = Integer.MIN_VALUE;
     
@@ -725,7 +784,7 @@ public class AnimationReader
            A valid declaration must pass the following conditions:
             1. The number of arguments is at least 2. (3+ are ignored.)
             2. The second argument is a natural number. */
-        if (tokens.length < 2 || !pattern.matcher(tokens[1]).matches()) {
+        if (tokens.length < 2 || !positive_int.matcher(tokens[1]).matches()) {
           endOfList = true;
         }
         
@@ -782,11 +841,6 @@ public class AnimationReader
       System.out.println("Wait failed: Invalid argument count.");
     }
     
-    /* The second argument is not an integer. */
-    catch (NumberFormatException e) {
-      System.out.println("Wait failed: Invalid argument format.");
-    }
-    
     /* The thread is interrupted. */
     catch (InterruptedException e) {
       System.out.println("Wait cancelled: Sleep interrupted.");
@@ -817,9 +871,6 @@ public class AnimationReader
       /* Stores the line of text extracted from the file. */
       String line = "";
       
-      /* The required regular expression pattern for a natural number. */
-      Pattern pattern = Pattern.compile("\\d+");
-      
       /* Read each line in the animation text file. */
       while ( (line = reader.readLine() ) != null)
       {
@@ -837,7 +888,7 @@ public class AnimationReader
            * A valid declaration follows:
            *  1. The number of arguments is at least 2. (3+ are ignored.)
            *  2. The second argument is a natural number. */
-          if (tokens.length > 1 && pattern.matcher(tokens[1]).matches()) {
+          if (tokens.length > 1 && positive_int.matcher(tokens[1]).matches()) {
             /* Return if the ID specified matches the requested ID. */
             if (Integer.parseInt(tokens[1]) == id) {
               return reader;
@@ -916,7 +967,7 @@ public class AnimationReader
       System.out.println("Goto failed: Invalid argument count.");
     }
     
-    /* The second argument is not an integer. */
+    /* An integer argument is not an integer. */
     catch (NumberFormatException e) {
       System.out.println("Goto failed: Invalid argument format.");
     }

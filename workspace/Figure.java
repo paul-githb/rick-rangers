@@ -180,7 +180,7 @@ public class Figure extends JLabel
     start_move = System.currentTimeMillis();
     
     /* Continuously modify the position of the character. */
-    while (flag)
+    while (flag && Game.getCurrentScene() != null)
     {
       long current = System.currentTimeMillis();
       long iteration = (current - start_move) / delta;
@@ -238,7 +238,11 @@ public class Figure extends JLabel
   {
     x = newX;
     y = newY;
-    Game.getCurrentScene().repaint();
+    
+    /* Make sure the scene is still running. */
+    if (Game.getCurrentScene() != null) {
+      Game.getCurrentScene().repaint();
+    }
   }
   
   /** Returns the character's unique identification label.
@@ -345,38 +349,4 @@ public class Figure extends JLabel
   
   
   /* TESTER METHODS */
-  
-  public static void main(String[] args)
-  {
-    
-    Thread thread1 = new Thread() {
-      public void run() {
-        int x0 = 3, y0 = 4; // distance from origin: 5
-        int x1 = 0, y1 = 0;
-        int speed = 1; // 1 px/sec: 5 seconds total
-        Figure fig = new Figure("enemy", "enemy1", x0, y0);
-        fig.moveTo(x1, y1, speed);
-      }
-    };
-    
-    Thread thread2 = new Thread() {
-      public void run() {
-        int x0 = 3, y0 = 4; // distance from origin: 5
-        int x1 = 0, y1 = 0;
-        int speed = 1; // 1 px/sec: 5 seconds total
-        Figure fig = new Figure("mob", "mob1", x0, y0);
-        fig.moveTo(x1, y1, speed * 2);
-      }
-    };
-    
-    thread1.start();
-    thread2.start();
-    
-    try {
-      thread1.join();
-      thread2.join();
-    } catch (InterruptedException e) {
-      System.out.println(".");
-    }
-  }
 }

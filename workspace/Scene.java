@@ -210,7 +210,9 @@ public class Scene extends JPanel
     ("Moved character w/ ID:\"" + id + "\" to (" + x + "," + y + ")"
     + " @ " + speed + " px/s");
     Figure fig = getCharacter(id);
-    if (fig != null) fig.moveTo(x, y, speed);
+    if (fig != null) {
+      (new Thread(new Move(fig, x, y, speed))).start();
+    }
   }
   
   /** */
@@ -277,6 +279,26 @@ public class Scene extends JPanel
   
   
   
+  /* INNER CLASS */
+  private class Move implements Runnable
+  {
+    private Figure fig;
+    private int fx, fy, vel;
+    
+    public Move(Figure fig, int x, int y, int speed) {
+      this.fig = fig;
+      fx = x;
+      fy = y;
+      vel = speed;
+    }
+    
+    public void run() {
+      fig.moveTo(fx, fy, vel);
+    }
+  }
+  
+  
+  
   /* OVERRIDDEN FUNCTIONS */
   
   @Override
@@ -305,7 +327,11 @@ public class Scene extends JPanel
       characters.get(i).paintComponent(g);
     }
     
-    /* Paint the text box. FIXME */
+    /* Paint the cover if transitioning. */
+    g.setColor(new Color(0, 0, 0, opacity));
+    g.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
+    
+    /* Paint the text box. */
     int num_lines = text.size();
     if (num_lines != 0)
     {
@@ -332,10 +358,6 @@ public class Scene extends JPanel
         g.drawString(line, x, y + font_size * i);
       }
     }
-    
-    /* Paint the cover if transitioning. */
-    g.setColor(new Color(0, 0, 0, opacity));
-    g.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
   }
   
   

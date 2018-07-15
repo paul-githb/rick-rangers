@@ -57,5 +57,9 @@ public class Transition implements Runnable
     } else {
       scene.setOpacity(255);
     }
+    
+    long end = System.currentTimeMillis();
+    double elapsed = (end - start) / 1000.0;
+    System.out.printf("Transition time elapsed: %.2fs\n", elapsed);
   }
 }
