@@ -68,7 +68,7 @@ public class Figure extends JLabel
    *  @param id     The identification label.
    *  @param x0     The initial horizontal position in pixels.
    *  @param y0     The initial vertical position in pixels.
-   *  @param size   The initial relative size of the character.
+   *  @param size   The initial size of the character.
    *  @param type   The type of sizing, either relative or absolute. */
   public Figure
   (String name, String id, int x0, int y0, double size, String type)
@@ -87,7 +87,7 @@ public class Figure extends JLabel
   /* PUBLIC MEMBER FUNCTIONS */
   
   /** Resizes the character based on the relative scale given. The
-   *  dimensions of the character are multiplied by the parameter.
+   *  dimensions of the character are sized based on reference height.
    *  The type of character remains the same. If a non-positive
    *  number is sent in, then the size remains the same.
    *  @param size   The factor by which to scale the character.
@@ -98,6 +98,7 @@ public class Figure extends JLabel
     if (type.equals("relative")) setRelativeSize(relativeSize * size);
     else setRelativeSize(size);
     
+    /* Retrieve the resized images. */
     loadImages();
     Game.getCurrentScene().repaint();
   }
@@ -108,8 +109,8 @@ public class Figure extends JLabel
    *  @param name   The name of the character to switch to. */
   public void transformInto(String name)
   {
-    setType(name);
-    loadImages();
+    setType(name); // determine the character type
+    loadImages(); // retrieve the character's images
     Game.getCurrentScene().repaint();
   }
   
@@ -125,8 +126,8 @@ public class Figure extends JLabel
     if (type.equals("relative")) setRelativeSize(relativeSize * size);
     else setRelativeSize(size);
     
-    setType(name);
-    loadImages();
+    setType(name); // determine the character's type
+    loadImages(); // retrieve the character's sized images
     Game.getCurrentScene().repaint();
   }
   
@@ -220,7 +221,11 @@ public class Figure extends JLabel
   public void setX(double newX)
   {
     x = newX;
-    Game.getCurrentScene().repaint();
+    
+    /* Make sure the scene is still running. */
+    if (Game.getCurrentScene() != null) {
+      Game.getCurrentScene().repaint();
+    }
   }
   
   /** Sets the vertical position of the character.
@@ -228,7 +233,11 @@ public class Figure extends JLabel
   public void setY(double newY)
   {
     y = newY;
-    Game.getCurrentScene().repaint();
+    
+    /* Make sure the scene is still running. */
+    if (Game.getCurrentScene() != null) {
+      Game.getCurrentScene().repaint();
+    }
   }
   
   /** Sets the horizontal and vertical position of the character.
@@ -253,13 +262,14 @@ public class Figure extends JLabel
   }
   
   /** Sets the appearance of the character when it is not moving.
-   *  Use of the public static fields are encouraged.
-   *  @param The animation image state to set appearance. */
+   *  @param The appearance to set. */
   public void setState(String state)
   {
     /* First, try to see if it's an integer. */
     try {
       int newState = Integer.parseInt(state);
+      
+      /* Make sure the integer is within bounds. */
       currentState = (STILL <= newState && newState <= ACTION2) ?
       newState : STILL;
     }
@@ -296,9 +306,8 @@ public class Figure extends JLabel
     else type = FigureType.MOB;
   }
   
-  /** Sets the size of the character relative to its current
-   *  size. If the size is non-positive, then the size is kept
-   *  the same.
+  /** Sets the scale of the character's images.
+   *  If the size is non-positive, then the size is kept the same.
    *  @param size   The factor by which to scale the character. */
   private void setRelativeSize(double size)
   {

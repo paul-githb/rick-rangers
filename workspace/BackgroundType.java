@@ -21,13 +21,18 @@ public enum BackgroundType
   
   /* PRIVATE DATA */
   
-  /* The background image. */
+  /* The background image for each enumeration. */
   private ImageIcon image;
   
   
   
   /* CONSTRUCTORS */
   
+  /** Constructor for the BackgroundType class, which initializes each
+   *  BackgroundType enumeration. Each type has an image, which will be
+   *  used to fill the background in each scene. The image will be scaled
+   *  in order to fit the dimensions of the JFrame window.
+   *  @param fileName   The name of the image file. */
   BackgroundType(String fileName)
   {
     String path = "..\\images\\backgrounds\\"; // relative path to bg folder
@@ -42,6 +47,8 @@ public enum BackgroundType
   
   /* PUBLIC FUNCTIONS */
   
+  /** Function that returns the image representing this background type.
+   *  @return the background image. */
   public ImageIcon getImage()
   {
     return image;

@@ -31,7 +31,7 @@ public enum FigureType
    *  a string representing the path to the image files from the
    *  base images directory, plus the figure's name. It then
    *  loads all of the relevant images for the specified character,
-   *  Filling in any gaps at the end of the array with the default
+   *  filling in any gaps at the end of the array with the default
    *  still image.
    *  @param image    The path to a character's image files and its name. */
   FigureType(String image)

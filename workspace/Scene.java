@@ -102,13 +102,19 @@ public class Scene extends JPanel
     return animationFile;
   }
   
-  /** */
+  /** Function to return this scene's scene-id.
+   *  @return the scene-id. */
   public int getSceneID()
   {
     return sceneID;
   }
   
-  /** */
+  /** Function to add a new GameButton to the scene. This GameButton,
+   *  if pressed, will later modify the value stored in the result
+   *  variable, which will be used to help the flow of the Animation-
+   *  Reader.
+   *  @param title    The label text.
+   *  @param id       The "goto" id for this button. */
   public void addButton(String title, int id)
   {
     System.out.println("Button added: " + title + " -> " + id);
@@ -121,13 +127,16 @@ public class Scene extends JPanel
     repaint();
   }
   
-  /** */
+  /** Returns the value stored in the result variable, which will be
+   *  used to jump to a specific point within an animation file.
+   *  @return the value of the result variable. */
   public int getResult()
   {
     return result;
   }
   
-  /** */
+  /** Removes all buttons from the scene and window. This method also
+   *  resets the result variable back to 0. */
   public void destroyButtons()
   {
     for (int i = 0; i < buttons.size(); i++)
@@ -139,13 +148,27 @@ public class Scene extends JPanel
     repaint();
   }
   
-  /** */
+  /** Function to set the value of the result variable. This function is
+   *  to be used to indicate to the AnimationReader that a button has
+   *  been selected and to find the resulting line-id.
+   *  @param res    The value to store in the result variable. */
   public void setResult(int res)
   {
     result = res;
   }
   
-  /** */
+  /** Function to add a new character into the scene. This method uses
+   *  the parameters to create a new local character or to search for the
+   *  specific id in the set of global characters. If no global
+   *  character matching the specific ID is found, this method creates
+   *  a new global variable using the parameters.
+   *  @param cType    Whether the character is local or global.
+   *  @param name     The character type's name.
+   *  @param id       The unique ID to use for character reference.
+   *  @param x        The initial horizontal position.
+   *  @param y        The initial vertical position.
+   *  @param sz       The initial size of the character.
+   *  @param type     The type of sizing to be used: relative or absolute. */
   public void addCharacter
   (String cType, String name, String id,
    int x, int y, double sz, String type)
@@ -161,7 +184,11 @@ public class Scene extends JPanel
     repaint();
   }
   
-  /** */
+  /** Function to remove the character in the list of local characters
+   *  with the specified ID. Note that global characters that were added
+   *  are also local to this scene, but these will remain even after they
+   *  are removed here.
+   *  @param id     The unique ID that references the character. */
   public void removeCharacter(String id)
   {
     int i = -1;
@@ -180,7 +207,9 @@ public class Scene extends JPanel
     }
   }
   
-  /** */
+  /** Function that removes every character from the scene. Note that
+   *  removing global characters won't erase their existance from
+   *  the global character set. */
   public void removeAll()
   {
     for (int i = 0; i < characters.size(); i++)
@@ -194,7 +223,10 @@ public class Scene extends JPanel
     repaint();
   }
   
-  /** */
+  /** Function to set the appearance or state of a character with
+   *  the specified ID.
+   *  @param id         The unique ID that references the character.
+   *  @param appearance The specific keyword to set the appearance. */
   public void setCharacter(String id, String appearance)
   {
     System.out.println
@@ -204,7 +236,14 @@ public class Scene extends JPanel
     repaint();
   }
   
-  /** */
+  /** Function to move a character from its current location to another
+   *  location specified by the parameters. The move will be done on a
+   *  thread, and so will not interfere with the execution of following
+   *  commands.
+   *  @param id     The unique ID that references the character.
+   *  @param x      The horizontal position to move to.
+   *  @param y      The vertical position to move to.
+   *  @param speed  The speed at which to move in px/s. */
   public void moveCharacter(String id, int x, int y, int speed) {
     System.out.println
     ("Moved character w/ ID:\"" + id + "\" to (" + x + "," + y + ")"
@@ -215,7 +254,9 @@ public class Scene extends JPanel
     }
   }
   
-  /** */
+  /** Function to add a line of text to the screen. If the text string
+   *  is the empty string or null, then all text on-screen are cleared.
+   *  @param text   The line to append to the screen text. */
   public void addText(String text) {
     if ( text == null || text.equals("") )
       this.text = new ArrayList<String>();
@@ -223,7 +264,11 @@ public class Scene extends JPanel
     repaint();
   }
   
-  /** */
+  /** Function to set the background image. This method determines
+   *  the background type corresponding to the name keyword and
+   *  appropriately sets the background image. The default in case
+   *  of an invalid keyword is the title screen.
+   *  @param name   The keyword denoting the background type. */
   public void setBackgroundImage (String name)
   {
     /* The background type. */
@@ -247,7 +292,13 @@ public class Scene extends JPanel
     repaint();
   }
   
-  /** */
+  /** Function that resizes a character existing within the local set
+   *  of characters. Note that global characters will be modified
+   *  permanently. If this is of concern, be sure to create a local
+   *  character instead.
+   *  @param id     The unique ID to reference the character.
+   *  @param size   The size to set the character, where 1 is no-change.
+   *  @param type   The type of sizing used: absolute or relative. */
   public void resizeCharacter (String id, double size, String type)
   {
     System.out.println("Resized character w/ ID:\"" + id + "\" to a"
@@ -260,6 +311,11 @@ public class Scene extends JPanel
   
   
   /* PRIVATE MEMBER FUNCTIONS */
+  
+  /** Function which returns a character based on its ID. If the character
+   *  does not exist, a value of null is returned.
+   *  @param id     The ID of the character to find.
+   *  @return The character with the given ID; null if it doesn't exist. */
   private Figure getCharacter(String id)
   {
     /* Loop through each character in the scene. */
@@ -279,12 +335,25 @@ public class Scene extends JPanel
   
   
   
-  /* INNER CLASS */
+  /* INNER CLASSES */
+  
+  /** The class designed to allow characters to be moved within a separate
+   *  thread. This class allows a Figure object to be moved without having
+   *  to declare it final. */
   private class Move implements Runnable
   {
+    /** The scene character to move. */
     private Figure fig;
+    
+    /* The settings with which the character will be moved. */
     private int fx, fy, vel;
     
+    /** Constructor for the Move class, which initializes settings
+     *  to be used for the move command.
+     *  @param fig    The character to move.
+     *  @param x      The horizontal position to move to.
+     *  @param y      The vertical position to move to.
+     *  @param speed  The speed at which to move in px/s. */
     public Move(Figure fig, int x, int y, int speed) {
       this.fig = fig;
       fx = x;
@@ -292,6 +361,8 @@ public class Scene extends JPanel
       vel = speed;
     }
     
+    /** When called, moves the stored figure from its current position
+     *  to its final position. */
     public void run() {
       fig.moveTo(fx, fy, vel);
     }
@@ -301,6 +372,8 @@ public class Scene extends JPanel
   
   /* OVERRIDDEN FUNCTIONS */
   
+  /** {@inheritDoc}
+   *  Allows the size of the window to be set accordingly. */
   @Override
   public Dimension getPreferredSize()
   {
@@ -308,6 +381,13 @@ public class Scene extends JPanel
     (Game.WIDTH, Game.HEIGHT);
   }
   
+  /** {@inheritDoc}
+   *  Paints all the characters and text to the JPanel. The components
+   *  are painted in this order, with earlier components placed under
+   *  the later components: the background image, the characters in the
+   *  order that they were added, the transition cover, and the text
+   *  box. Five lines of text can fit on the text box, and the latest
+   *  five will be shown. */
   @Override
   public void paintComponent(Graphics g)
   {
@@ -359,10 +439,5 @@ public class Scene extends JPanel
         g.drawString(line, x, y + font_size * (i - first_line));
       }
     }
-  }
-  
-  public String toString()
-  {
-    return "Scene ID:" + sceneID;
   }
 }

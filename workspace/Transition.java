@@ -11,6 +11,12 @@ public class Transition implements Runnable
   /** The direction of transition: -1 for in, +1 for out. */
   private int direction;
   
+  /** Constructor for the Transition class. Initializes the
+   *  necessary fields to be able to carry out the transition
+   *  when run.
+   *  @param scene    The scene in which the transition is to occur.
+   *  @param duration The time of transition in milliseconds.
+   *  @param dir      The direction of transition: -1 for in, 1 for out. */
   public Transition(Scene scene, int duration, int dir)
   {
     this.scene = scene;
@@ -27,6 +33,10 @@ public class Transition implements Runnable
     }
   }
   
+  /** Performs the transition within its containing scene. The transition
+   *  is carried out by repeatedly setting the opacity of the scene and
+   *  then repainting it. This method uses the transition time and direction
+   *  to find the appropriate change in opacity each time frame. */
   public void run()
   {
     /* Initial setup */

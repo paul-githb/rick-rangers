@@ -47,7 +47,7 @@ public class AnimationReader
   /** The main reader processing the file. */
   private BufferedReader mainReader;
   
-  /** Pre-compiled regex patterns for positive numbers/characters. */
+  /* Pre-compiled regex patterns for positive numbers/characters. */
   private Pattern positive_int = Pattern.compile("[0-9]+");
   private Pattern positive_double = Pattern.compile("[0-9]*\\.?[0-9]+");
   private Pattern alphabet = Pattern.compile("[a-z]+");
