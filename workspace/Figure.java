@@ -3,6 +3,27 @@ import java.io.*;
 import javax.swing.*;
 import static java.lang.Math.*;
 
+/** This class represents a character/figure in the game. Each figure
+ *  object contains data on its current position, character-type, id,
+ *  size, possible states, and current state.
+ *
+ *  The character's position fields determine where in the game window
+ *  it will be painted. The x-position represents the center of the
+ *  character, while the y-position represents the bottom.
+ *
+ *  The character-type is one of the types as defined in the FigureType
+ *  enum. This determines the overall appearance of the character as well
+ *  as its possible action states. Its actual appearance is determined
+ *  by the current state, which is one of the states within the array
+ *  or collection of possible states (an ImageIcon array).
+ *
+ *  The character's ID is what allows you to differentiate between
+ *  different characters within a scene. This is represented as a string.
+ *
+ *  @author Paul Shin
+ *  @since 0.1.0
+ *  @version 0.1.0
+ */
 public class Figure extends JLabel
 {
   /* INSTANCE VARIABLES */
@@ -10,8 +31,6 @@ public class Figure extends JLabel
   /* Position fields */
   private double x;
   private double y; // the position of the figure
-  private double vx;
-  private double vy; // the speed of the figure
   
   /* Animation-specific fields */
   private FigureType type; // holds the animation images by character type
@@ -73,7 +92,7 @@ public class Figure extends JLabel
   public Figure
   (String name, String id, int x0, int y0, double size, String type)
   {
-    /* Initialize position fields and id. Speed is initialized to zero. */
+    /* Initialize position fields and id. */
     x = x0;
     y = y0;
     this.id = id;
@@ -152,7 +171,7 @@ public class Figure extends JLabel
     }
     
     /* Convert negative speed to positive. */
-    speed = Math.abs(speed);
+    speed = abs(speed);
     
     /* If the speed is too slow, increase it. */
     if (speed < 1) {

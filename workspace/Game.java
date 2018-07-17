@@ -3,6 +3,27 @@ import java.io.*;
 import javax.swing.*;
 import java.util.ArrayList;
 
+/** The Game class is in charge of holding all of the scenes in the game
+ *  as well as the global characters able to be referenced within each
+ *  scene. This class also controls the order in which the AnimationReader
+ *  processes scenes, starting with the scene marked with the scene-id 0.
+ *
+ *  When a Game object is created, the first task that's completed is
+ *  the loading of all enumeration types for faster retrieving of data
+ *  later on. The program then searches the animation_files directory
+ *  within projects/adventure1 for animation files with the correct
+ *  heading format: "ANIMATION [scene-id] [[background-name]]". Then,
+ *  the scenes are sorted for fast retrieval, in case many scenes are
+ *  found.
+ *
+ *  To start the game, the run() function is called, which first searches
+ *  for the scene with an ID of 0, then continues until a scene returns
+ *  either a negative or a non-existant scene-id.
+ *
+ *  @author Paul Shin
+ *  @since 0.1.0
+ *  @version 0.1.0
+ */
 public class Game extends JFrame
 {
   /** The collection of scenes present in the game. */
@@ -19,7 +40,9 @@ public class Game extends JFrame
   public static final int HEIGHT = 500;
   
   /** Constructor for the Game class. Represents the window of the
-   *  game that retrieves and holds all of the scenes. */
+   *  game that retrieves and holds all of the scenes. When called,
+   *  the constructor also loads all of the enumerations so that
+   *  they can be quickly retrieved later. */
   public Game() {
     super("Game");
     

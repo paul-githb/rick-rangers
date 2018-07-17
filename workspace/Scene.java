@@ -5,7 +5,50 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-
+/** The Scene class is responsible for holding all of the characters,
+ *  text, transitions, and buttons used in an animation. A game
+ *  is divided into multiple scenes, and each scene has a different
+ *  theme and is responsible for a different set of animations.
+ *
+ *  The list of characters in the scene is local to this scene. However,
+ *  it can also contain characters that exist within the global
+ *  character set, which will continue to exist even after its local
+ *  counterpart is removed in this scene. The Scene class allows for
+ *  the manipulation of characters in multiple ways, including adding,
+ *  removing, and setting the appearance and size of characters. Note
+ *  that changes to global characters within this local setting also
+ *  has a global effect.
+ *
+ *  A scene object also stores an opacity value, which is equivalent to
+ *  the "a" in RGBA. This opacity value ranges from 0 to 255, where 0
+ *  is completely transparent and 255 is completely opaque. By default,
+ *  the starting opacity is 255 to support smooth transitioning between
+ *  scenes; however, if you'd like it to start at 0, the command
+ *  "set opacity none" within the animation file should be sufficient.
+ *
+ *  Each scene can be referenced using its respective scene-id. This id
+ *  is a natural number, i.e. 0, 1, 2, and so on. A scene marked with the
+ *  id of 0 is animated first.
+ *
+ *  Another component of this class is the list of buttons, which provide
+ *  players the options to choose an action to perform. The class provides
+ *  support for the addition of buttons one-by-one and the removal of all
+ *  buttons. The removal of buttons should occur when the user selects a
+ *  button in the list, and after the appropriate action within the button
+ *  has been noted/carried out. This is achieved with the use of another
+ *  variable, namely the result variable: this variable is set to 0
+ *  whenever no button has yet been pressed.
+ *
+ *  Finally, each scene also contains text in the form of a list. Each
+ *  entry in the list will be placed in its own line. Only the last
+ *  five entries will be shown, and lines which extend past the width
+ *  of the text box will not wrap to a new line. This class allows the
+ *  addition and removal of lines of text, via the same function.
+ *
+ *  @author Paul Shin
+ *  @since 0.1.0
+ *  @version 0.1.0
+ */
 public class Scene extends JPanel
 {
   /* INSTANCE VARIABLES */

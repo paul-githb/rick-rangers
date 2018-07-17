@@ -1,6 +1,15 @@
 import java.awt.*;
 import javax.swing.*;
 
+/** Contains all of the possible background types/images that can be
+ *  used in the game. When called, each enumeration will have stored
+ *  within them a background image scaled to fit the dimensions of
+ *  the game window.
+ *
+ *  @author Paul Shin
+ *  @since 0.1.0
+ *  @version 0.1.0
+ */
 public enum BackgroundType
 {
   /* ENUMERATIONS */

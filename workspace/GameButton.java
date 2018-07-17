@@ -2,6 +2,18 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+/** This class creates a new game button, which performs an action
+ *  when pressed. Each game button contains a link (equivalent to
+ *  a line-id), which when pressed is similar to calling the goto
+ *  command. This is achieved by having the game button set the
+ *  value of the scene's result variable when an action is detected,
+ *  which indicates to the AnimationReader that a button has been
+ *  pressed and which one has been pressed.
+ *
+ *  @author Paul Shin
+ *  @since 0.1.0
+ *  @version 0.1.0
+ */
 public class GameButton extends JButton
 {
   /** The scene in which this button exists. */

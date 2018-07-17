@@ -2,7 +2,32 @@ import java.awt.*;
 import java.io.File;
 import javax.swing.*;
 
-/** */
+/** Defines all of the possible character types in the game. Each
+ *  character type is accompanied by a set of images which
+ *  represent the different possible states or appearances. Up to
+ *  five possible states exist, with one representing the still
+ *  image, another two representing movement, and the final two
+ *  representing the two possible action states.
+ *
+ *  When loaded, the path to the image files are searched for
+ *  the necessary image filenames. For each character, the image
+ *  filenames searched for are of the form "[name][index].png",
+ *  where name is the character-type, index is a positive integer
+ *  starting at 0, and the image is of the PNG file format.
+ *  The images are then resized so that the height matches that
+ *  of the game window by default.
+ *
+ *  When retrieving the set of images, you can either retrieve the
+ *  default-sized image array or a resized type. In order to retrieve
+ *  a resized image array, the absolute size is passed into the
+ *  getAnimationImagesResized(double) function (absolute meaning
+ *  with respect to the height of the window). Either way, the
+ *  returned array is immutable.
+ *
+ *  @author Paul Shin
+ *  @since 0.1.0
+ *  @version 0.1.0
+ */
 public enum FigureType
 {
   /* ENUMERATIONS */

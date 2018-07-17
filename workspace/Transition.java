@@ -1,5 +1,13 @@
-
-
+/** This class is used to run a transition into out of a scene. It allows
+ *  for a transition to be run on its own thread, so as to not delay the
+ *  execution of following commands while the transition is running.
+ *  The transition is run by calculating the change in opacity necessary
+ *  to run the transition in the given amount of time.
+ *
+ *  @author Paul Shin
+ *  @since 0.1.0
+ *  @version 0.1.0
+ */
 public class Transition implements Runnable
 {
   /** The scene being acted on by the transition. */
