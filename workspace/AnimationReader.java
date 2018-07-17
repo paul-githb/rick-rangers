@@ -53,8 +53,10 @@ public class AnimationReader
   private Pattern alphabet = Pattern.compile("[a-z]+");
   
   /** Performs animations based on each scene's respective animation file.
-      @param scene    The scene to animate on the screen.
-      @return The next scene to animate, or -1 if error or finished. */
+   *  Assumes that the scene has stored in it a valid animation file so
+   *  that any initial background image can be set.
+   *  @param scene    The scene to animate on the screen.
+   *  @return The next scene to animate, or -1 if error or finished. */
   public int animate (Scene scene)
   {
     /* The next scene to animate. */
@@ -261,11 +263,10 @@ public class AnimationReader
   
   /** Function to return the starting scene background image set by the
    *  animation file. This is not necessary, but is encouraged if you
-   *  know what the starting background image is, as it will be loaded
-   *  during scene creation.
+   *  know what the starting background image is.
    *  Precondition: The file has been previously sent through the function
    *  boolean isAnimationFile(String) and verified. If any error occurs,
-   *  the null string is returned.
+   *  the null string "" is returned.
    *  @param file   The path to the animation file.
    *  @return The name of the background to set during scene creation. */
   public String extractSceneBG (String file)
@@ -326,16 +327,16 @@ public class AnimationReader
   }
   
   /** Handles the add command, which adds a character to a scene.
-      The proper syntax is:
-      add [global|local] [name] [id] [x] [y] [size] [type]
-      where the keyword "global" denotes a character that can be
-      saved and used throughout all scenes, "local" denotes a
-      character that is to be used only in the current scene, id is
-      a string representing the character's unique ID, x is
-      the initial horizontal position, y is the initial vertical
-      position, size is the initial size, and type is the type of
-      sizing used (absolute or relative).
-      @param tokens   The line with the add command and arguments. */
+   *  The proper syntax is:
+   *  add [global|local] [name] [id] ][x]] [[y]] [[size]] [[type]]
+   *  where the keyword "global" denotes a character that can be
+   *  saved and used throughout all scenes, "local" denotes a
+   *  character that is to be used only in the current scene, name
+   *  is the character type, id is a string representing the character's
+   *  unique ID, x is the initial horizontal position, y is the initial
+   *  vertical position, size is the initial size, and type is the type
+   *  of sizing used (absolute or relative).
+   *  @param tokens   The line with the add command and arguments. */
   private void handleAdd (String[] tokens)
   {
     try {
@@ -385,10 +386,10 @@ public class AnimationReader
   }
   
   /** Handles the remove command, which removes a character from the scene.
-      The proper syntax is: remove [all|id], where the keyword "all"
-      specifies that all characters are to be removed, whereas id is a
-      string representing the character's unique ID.
-      @param tokens   The line with the remove command and arguments. */
+   *  The proper syntax is: remove [all|id], where the keyword "all"
+   *  specifies that all characters are to be removed, and id is a
+   *  string representing the character's unique ID.
+   *  @param tokens   The line with the remove command and arguments. */
   private void handleRemove(String[] tokens)
   {
     try {
@@ -414,12 +415,12 @@ public class AnimationReader
   }
   
   /** Handles the move command, which moves a character in the scene
-      from one location to another. The proper syntax is:
-      move [id] [x] [y] [speed], where id is a string representing
-      the character's unique ID, x is the new horizontal
-      coordinate, y is the new vertical coordinate, and speed is the
-      speed of movement in pixels per second.
-      @param tokens   The line with the move command and arguments. */
+   *  from one location to another. The proper syntax is:
+   *  move [id] [x] [y] [speed], where id is a string representing
+   *  the character's unique ID, x is the new horizontal
+   *  coordinate, y is the new vertical coordinate, and speed is the
+   *  speed of movement in pixels per second.
+   *  @param tokens   The line with the move command and arguments. */
   private void handleMove(String[] tokens)
   {
     try {
@@ -457,7 +458,7 @@ public class AnimationReader
    *  changes the background image, sets the opacity, or sets a character's
    *  size. The respective syntaxes for these commands are "set character
    *  [id] [appearance]", "set background [background-name]", "set opacity
-   *  [0-100]", and "set size [id] [size] [absolute|relative]".
+   *  [value]", and "set size [id] [value] [[absolute|relative]]".
    *  @param tokens   The line with the set command and arguments. */
   private void handleSet(String[] tokens)
   {
@@ -554,7 +555,14 @@ public class AnimationReader
     }
   }
   
-  private double evaluatePercent(String token) throws IllegalArgumentException
+  /** Takes in a percentage/decimal value and returns its equivalent
+   *  value in percent. For example, a value of 75.0% will return
+   *  a value of 75.0, and a value of 0.2 will return a value of 20.0.
+   *  @param token    The percentage/decimal value to interpret.
+   *  @return The equivalent value in percentage.
+   *  @throws IllegalArgumentException if the format is invalid. */
+  private double evaluatePercent (String token)
+  throws IllegalArgumentException
   {
     Matcher m
     = (Pattern.compile(positive_int + "%$")).matcher
@@ -602,16 +610,16 @@ public class AnimationReader
       return (int) (Double.parseDouble(token) * 100);
     }
     
-    /* The value is not a number. */
+    /* The format does not match one of the above. */
     throw new IllegalArgumentException();
   }
   
   /** Handles the print command, which displays text on the screen.
-      The proper syntax is: print [text], where text is the text
-      string to display. Note that quotation marks and underscores (_)
-      are NOT required, and instead are interpreted as part of the
-      text string.
-      @param tokens   The line with the print command and arguments. */
+   *  The proper syntax is: print [text], where text is the text
+   *  string to display. Note that quotation marks and underscores (_)
+   *  are NOT required, and instead are interpreted as part of the
+   *  text string.
+   *  @param tokens   The line with the print command and arguments. */
   private void handlePrint(String[] tokens)
   {
     int len = tokens.length; // number of tokens
@@ -628,12 +636,12 @@ public class AnimationReader
   }
   
   /** Handles the return command, which stops processing the animation
-      file and specifies the next scene to animate, or -1 if finished.
-      The proper syntax is: return [scene], where scene is an integer
-      representing which scene to animate next as specified by the
-      order of the scenes in some structure, like an array.
-      @param tokens   The line with the return command and arguments.
-      @return An integer value representing the next scene to animate. */
+   *  file and specifies the next scene to animate, or -1 if finished.
+   *  The proper syntax is: return [scene], where scene is an integer
+   *  representing which scene to animate next as specified by the
+   *  scene-id.
+   *  @param tokens   The line with the return command and arguments.
+   *  @return An integer value representing the next scene to animate. */
   private int handleReturn(String[] tokens)
   {
     try {
@@ -657,9 +665,9 @@ public class AnimationReader
   
   /** Handles the transition command, which provides a smooth inward
    *  or outward transition in the scene. The proper syntax is:
-   *  transition [in|out] [ms], where the keyword "in" invokes an inward
+   *  transition [in|out] [time], where the keyword "in" invokes an inward
    *  transition while the keyword "out" invokes an outward transition,
-   *  and ms is an integer representing the duration in milliseconds.
+   *  and time is the duration of the event.
    *  @param tokens   The line with the transition command and arguments. */
   private void handleTransition(String[] tokens)
   {
@@ -692,10 +700,12 @@ public class AnimationReader
    *  and returns the equivalent value in milliseconds. This is useful
    *  for commands which deal with a time value, like transition or wait.
    *  No specifier assumes the time has been specified in milliseconds,
-   *  as does an invalid specifier.
+   *  whereas an invalid specifier throws an exception.
    *  @param token    The time-value token to check.
-   *  @return the equivalent value of token in milliseconds. */
-  private int evaluateTime(String token) throws IllegalArgumentException
+   *  @return the equivalent value of token in milliseconds.
+   *  @throws IllegalArgumentException if the format of time is invalid. */
+  private int evaluateTime (String token)
+  throws IllegalArgumentException
   {
     Matcher m
     = (Pattern.compile(positive_double + ".*")).matcher
@@ -755,14 +765,14 @@ public class AnimationReader
   }
   
   /** Handles the display and input regulation of the buttons
-      as defined in the button list. The flow and interpretation
-      of the animation file is determined here, but the definitions
-      and execution of the animations are done in the Scene itself.
-      Precondition: The reader is currently pointing to the line after an *.
-      @param scene    The scene in which the buttons are displayed.
-      @param reader   The BufferedReader that's reading the file.
-      @return The button's ID. This ID specifies where in the file to
-              navigate to next, and can be marked using "id ID". */
+   *  as defined in the button list. The flow and interpretation
+   *  of the animation file is determined here, but the definitions
+   *  and execution of the animations are done in the Scene itself.
+   *  Precondition: The reader is currently pointing to the line after an *.
+   *  @param scene    The scene in which the buttons are displayed.
+   *  @param reader   The BufferedReader that's reading the file.
+   *  @return The button's ID. This ID specifies where in the file to
+   *          navigate to next, and can be marked using "id ID". */
   private int handleButtons (Scene scene, BufferedReader reader)
   {
     /* Stores the line of text extracted from the file. */
@@ -784,7 +794,8 @@ public class AnimationReader
            A valid declaration must pass the following conditions:
             1. The number of arguments is at least 2. (3+ are ignored.)
             2. The second argument is a natural number. */
-        if (tokens.length < 2 || !positive_int.matcher(tokens[1]).matches()) {
+        if (tokens.length < 2
+        || !positive_int.matcher(tokens[1]).matches()) {
           endOfList = true;
         }
         
@@ -822,9 +833,9 @@ public class AnimationReader
   }
   
   /** Halts the program from executing for a given amount of time.
-      The proper syntax for the wait command is: wait [milliseconds],
-      where milliseconds is the halt time in milliseconds.
-      @param tokens   The parsed string containing wait information. */
+   *  The proper syntax for the wait command is: wait [time],
+   *  where time is the pause duration.
+   *  @param tokens   The line with the wait command and args. */
   private void handleWait (String[] tokens)
   {
     /* Stop the execution of the program for a given time. */
@@ -853,12 +864,12 @@ public class AnimationReader
   }
   
   /** Searches the file for the given ID and returns the location if it
-      exists. If the ID was marked in the file, then a BufferedReader
-      that's pointing to the line after the id declaration is returned.
-      If the ID was not marked, then nothing is returned.
-      @param id     The ID to search for in the file.
-      @return If id is found, a BufferedReader pointing to the next line
-              is returned. Otherwise, null is returned. */
+   *  exists. If the ID was marked in the file, then a BufferedReader
+   *  that's pointing to the line after the id declaration is returned.
+   *  If the ID was not marked, then nothing is returned.
+   *  @param id     The ID to search for in the file.
+   *  @return If id is found, a BufferedReader pointing to the next line
+   *          is returned. Otherwise, null is returned. */
   private BufferedReader findID (int id)
   {
     try {
@@ -910,12 +921,12 @@ public class AnimationReader
   }
   
   /** Handles the goto command and returns the location of the specified id.
-      The proper syntax is: goto [id], where id is a natural number
-      specifyin the location within the file the reader will jump to.
-      The location is returned as either a BufferedReader or null as
-      described in the method findID(int), and null if the syntax was invalid.
-      @param tokens   The line containing the goto command and arguments.
-      @return See BufferedReader findID(int). An error returns null. */
+   *  The proper syntax is: goto [id], where id is a natural number
+   *  specifying the location within the file the reader will jump to.
+   *  The location is returned as either a BufferedReader or null as
+   *  described in the method findID(int), and null if the syntax was invalid.
+   *  @param tokens   The line containing the goto command and arguments.
+   *  @return See BufferedReader findID(int). An error returns null. */
   private BufferedReader handleGoto (String[] tokens)
   {
     try {

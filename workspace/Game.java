@@ -8,10 +8,10 @@ public class Game extends JFrame
   /** The collection of scenes present in the game. */
   private ArrayList<Scene> scenes;
   
-  /* The utility used to read and process animation files. */
+  /** The utility used to read and process animation files. */
   private AnimationReader aReader;
   
-  /* The current scene being processed. */
+  /** The current scene being processed. */
   private static Scene currentScene = null;
   
   /* The scale of the JFrame window. */
