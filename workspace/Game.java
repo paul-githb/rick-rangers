@@ -185,4 +185,10 @@ public class Game extends JFrame
   {
     return currentScene;
   }
+  
+  public static void updateScene () {
+    if (currentScene != null) {
+      currentScene.repaint();
+    }
+  }
 }
