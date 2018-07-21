@@ -299,11 +299,14 @@ public class Scene extends JPanel
   
   /** Function to add a line of text to the screen. If the text string
    *  is the empty string or null, then all text on-screen are cleared.
-   *  @param text   The line to append to the screen text. */
-  public void addText(String text) {
-    if ( text == null || text.equals("") )
-      this.text = new ArrayList<String>();
-    else this.text.add(text);
+   *  @param textStr   The line to append to the screen text. */
+  public void addText(String textStr) {
+    if ( textStr == null || textStr.equals("") )
+      text = new ArrayList<String>();
+    else {
+      text.add(textStr);
+      if (text.size() > 5) text.remove(0);
+    }
     repaint();
   }
   
@@ -456,7 +459,6 @@ public class Scene extends JPanel
     
     /* Paint the text box. */
     int num_lines = text.size();
-    int first_line = (num_lines >= 5) ? num_lines - 5 : 0;
     if (num_lines != 0)
     {
       /* The text box. */
@@ -476,10 +478,10 @@ public class Scene extends JPanel
       g.setFont( new Font ( Font.MONOSPACED, Font.BOLD, font_size ) );
       int x = stroke + 2;
       y += font_size;
-      for (int i = first_line; i < num_lines; i++)
+      for (int i = 0; i < num_lines; i++)
       {
         String line = text.get(i);
-        g.drawString(line, x, y + font_size * (i - first_line));
+        g.drawString(line, x, y + font_size * i);
       }
     }
   }
