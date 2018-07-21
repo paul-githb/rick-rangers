@@ -37,7 +37,6 @@ public class Figure extends JLabel
   private ImageIcon[] images; // the animation images
   private double relativeSize = 1.0; // the current scale of the images
   
-  private long start_move; // the time in ms when movement began
   private String id; // the character's unique identification label
   private int currentState; // the current appearance of the character
   
@@ -197,14 +196,19 @@ public class Figure extends JLabel
     double cy = vy / (1000.0 / delta); // change in position in px
     
     /* Start the timer. */
-    start_move = System.currentTimeMillis();
+    long start = System.currentTimeMillis();
     
     /* Continuously modify the position of the character. */
     while (flag && Game.getCurrentScene() != null)
     {
       long current = System.currentTimeMillis();
-      long iteration = (current - start_move) / delta;
+      long timeDiff = current - start;
+      long iteration = timeDiff / delta;
       if (iteration != last) {
+        /* Set the character's appearance. */
+        if (timeDiff / 500 % 2 == 0) currentState = LEFT;
+        else currentState = RIGHT;
+        
         setPosition(x + cx, y + cy); // change position
         
         /* Check to see if the character is further away now than before. */
@@ -226,12 +230,10 @@ public class Figure extends JLabel
     }
     
     System.out.println("Move time elapsed: "
-    + ( (System.currentTimeMillis() - start_move) / 1000.0 ) + "s");
-    
-    /* End the timer. */
-    start_move = 0;
+    + ( (System.currentTimeMillis() - start) / 1000.0 ) + "s");
     
     /* Make sure the character is in the correct position. */
+    currentState = STILL;
     setPosition(fx, fy);
   }
   
@@ -356,15 +358,7 @@ public class Figure extends JLabel
     super.paintComponent(g);
     
     /* Determine the ImageIcon to use. */
-    ImageIcon icon = null;
-    if (start_move == 0) {
-      icon = images[currentState];
-    } else {
-      long current = System.currentTimeMillis();
-      long delta = 500; // ms in between changes in appearance
-      icon = ((current - start_move) / delta % 2 == 0) ?
-      images[LEFT] : images[RIGHT];
-    }
+    ImageIcon icon = images[currentState];
     
     /* Display the image in the correct location.
      * "x" should be the center of the image, and
